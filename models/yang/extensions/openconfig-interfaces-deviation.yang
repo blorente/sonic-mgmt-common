@@ -1,0 +1,69 @@
+module openconfig-interfaces-deviation {
+
+  yang-version "1";
+
+  // namespace
+  namespace "http://openconfig.net/yang/interfaces/deviation/extension";
+
+  prefix "oc-interfaces-dev";
+
+  // import some basic types
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-interfaces { prefix oc-intf; }
+  import openconfig-if-ip { prefix oc-ip; }
+  import openconfig-vlan { prefix oc-vlan; }
+  import openconfig-if-ethernet { prefix oc-eth; }
+
+  organization
+    "SONiC";
+
+  contact
+    "SONiC";
+
+  description
+    "This module describes a YANG model for openconfig-interfaces deviations.";
+
+  oc-ext:openconfig-version "0.1.0";
+
+  revision "2024-07-19" {
+    description
+      "Add Yang deviations for unsupported attributes.";
+    reference "0.1.0";
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-vlan:routed-vlan {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-eth:ethernet/oc-vlan:switched-vlan {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-vlan:vlan {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv4/oc-ip:addresses/oc-ip:address/oc-ip:vrrp {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv6/oc-ip:addresses/oc-ip:address/oc-ip:vrrp {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv4/oc-ip:neighbors {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv6/oc-ip:neighbors {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv4/oc-ip:proxy-arp {
+    deviate not-supported;
+  }
+
+  deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:subinterfaces/oc-intf:subinterface/oc-ip:ipv6/oc-ip:router-advertisement {
+    deviate not-supported;
+  }
+}

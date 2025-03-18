@@ -1,0 +1,15 @@
+name: "sonic-gnmi"
+description:
+    "Contains implementation of UMF, Unified Managment Framework, for working with yang models"
+
+third_party {
+homepage: "https://github.com/sonic-net/"
+  identifier {
+    type: Git
+    value: "https://github.com/sonic-net/sonic-mgmt-common"
+    primary_source: true
+  }
+  version: "fdff43c542e73706d008a18490c1e7662b433a56"
+  last_upgrade_date { year: 2024 month: 1 day: 4 }
+  license_type: NOTICE
+}

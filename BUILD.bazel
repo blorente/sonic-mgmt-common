@@ -1,0 +1,42 @@
+load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+
+# gazelle:prefix github.com/Azure/sonic-mgmt-common
+# gazelle:exclude patches
+# gazelle:go_naming_convention import_alias
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)
+
+pkg_tar(
+    name = "mgmt_tar",
+    mode = "0755",
+    deps = [
+        "//cvl:cvl_tar",
+        "//models/yang:models_tar",
+    ],
+)
+
+#bazel build :mgmt-common_deb_pkg
+#bazel cquery --output=files :mgmt-common_deb_pkg
+pkg_deb(
+    name = "mgmt-common_deb_pkg",
+    architecture = "any",
+    built_using = "bazel",
+    data = ":mgmt_tar",
+    description = "Sonic Management Common",
+    maintainer = "GPINS gNMI Team (Google)",
+    package = "sonic-mgmt-common",
+
+    # Note: currently uses static naming
+    package_file_name = "sonic-mgmt-common_1.0.0_amd64.deb",
+    version = "1.0",
+)

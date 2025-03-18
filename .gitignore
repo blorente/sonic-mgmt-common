@@ -1,0 +1,23 @@
+.vscode
+*.code-workspace
+build
+vendor
+__pycache__
+*.pyc
+*.rdb
+*.swp
+*.yin
+*.tree
+translib/ocbinds/ocbinds.go
+models/yang/*.md
+.idea
+
+#Bazel Output Dirs
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-sonic-mgmt-common
+
+#Bazel Module Files. To be ignored until migration to bazel modules completed.
+MODULE.bazel*
+

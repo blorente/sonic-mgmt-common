@@ -1,0 +1,8 @@
+filegroup(
+    name = "files",
+    srcs = glob(
+        ["*"],
+        exclude = glob(["*.bazel"]),
+    ),
+    visibility = ["//visibility:public"],
+)

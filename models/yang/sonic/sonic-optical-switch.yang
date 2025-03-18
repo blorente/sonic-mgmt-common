@@ -1,0 +1,99 @@
+module sonic-optical-switch {
+    namespace "http://github.com/Azure/sonic-optical-switch";
+    prefix opt-sw;
+    yang-version 1.1;
+
+    import sonic-extension {
+        prefix sonic-ext;
+    }
+
+    organization
+        "SONiC";
+
+    contact
+        "SONiC";
+
+    description
+        "Optical Switch";
+
+    revision 2024-01-24 {
+        description
+            "Initial revision.";
+    }
+
+    container sonic-optical-switch {
+        container OCS_XCONNECTS {
+            list OCS_XCONNECTS_LIST {
+                key "slot-number port-number";
+                leaf slot-number {
+                    type int32;
+                }
+                leaf port-number {
+                    type int32;
+                }
+                leaf peer-port-number {
+                    type int32;
+                }
+                leaf peer-slot-number {
+                    type int32;
+                }
+            }
+        }
+        container OCS_TOPOLOGY {
+            container global_topology {
+                leaf port-connectivity {
+                    type string;
+                }
+                leaf total-port-count {
+                    type int32;
+                }
+                leaf total-optical-module-count {
+                    type int32;
+                }
+                leaf ingress-port-count {
+                    type int32;
+                }
+                leaf egress-port-count {
+                    type int32;
+                }
+                leaf ingress-start-index {
+                    type int32;
+                }
+                leaf egress-start-index {
+                    type int32;
+                }
+                leaf inter-module-connection-support {
+                    type boolean;
+                }
+            }
+        }
+        container OCS_XCONNECT_RECOVERY {
+            container global_xconnect_recovery {
+                leaf port-connection-recovery-capability {
+                    type string;
+                }
+                leaf port-connection-recovery-behavior {
+                    type string;
+                }
+            }
+        }
+
+        container OCS_PORT_STATUSES {
+            list OCS_PORT_STATUSES_LIST {
+                key "slot-number port-number";
+                leaf slot-number {
+                    type int32;
+                }
+                leaf port-number {
+                    type int32;
+                }
+                leaf port-status {
+                    type string;
+                }
+                leaf port-status-message {
+                    type string;
+                }
+            }
+        }
+    }
+}
