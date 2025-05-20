@@ -812,7 +812,7 @@ module iana-if-type {
   identity dtm {
     base iana-interface-type;
     description
-      "Dynamic synchronous Trancontrollerr Mode.";
+      "Dynamic synchronous Transfer Mode.";
   }
   identity dcn {
     base iana-interface-type;

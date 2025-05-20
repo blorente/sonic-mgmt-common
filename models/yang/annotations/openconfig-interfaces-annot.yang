@@ -80,9 +80,9 @@ module openconfig-interfaces-annot {
         }
     }
 
-    deviation /oc-intf:interfaces/oc-intf:interface/oc-eth:ethernet/oc-eth:state/google-pins-if:controllerc-mode {
+    deviation /oc-intf:interfaces/oc-intf:interface/oc-eth:ethernet/oc-eth:state/google-pins-if:sfec-mode {
         deviate add {
-            sonic-ext:field-transformer "intf_eth_controllerc_mode_xfmr";
+            sonic-ext:field-transformer "intf_eth_sfec_mode_xfmr";
         }
     }
 
@@ -114,10 +114,10 @@ module openconfig-interfaces-annot {
         }
     }
 
-    deviation /oc-intf:interfaces/oc-intf:interface/oc-eth:ethernet/oc-eth:state/google-pins-if:controllerc-oper-mode {
+    deviation /oc-intf:interfaces/oc-intf:interface/oc-eth:ethernet/oc-eth:state/google-pins-if:sfec-oper-mode {
         deviate add {
             sonic-ext:db-name "STATE_DB";
-            sonic-ext:field-transformer "intf_eth_controllerc_oper_mode_xfmr";
+            sonic-ext:field-transformer "intf_eth_sfec_oper_mode_xfmr";
         }
     }
 

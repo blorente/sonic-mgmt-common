@@ -107,7 +107,7 @@ module google-pins-interfaces {
 
   revision 2021-12-06 {
     description
-      "Adding augments for per interface controllerc-mode.";
+      "Adding augments for per interface sfec-mode.";
     reference "0.5.0";
   }
 
@@ -161,25 +161,25 @@ module google-pins-interfaces {
         LLDP or LACP even if it blocked from forwarding traffic.";
     }
 
-    leaf controllerc-mode {
+    leaf sfec-mode {
       default AUTO;
       type enumeration {
         enum AUTO {
           description
-            "CONTROLLERC is enabled.";
+            "SFEC is enabled.";
         }
         enum DISABLE {
           description
-            "CONTROLLERC is disabled.";
+            "SFEC is disabled.";
         }
       }
       description
-        "Software-decision FEC (CONTROLLERC) mode is a cGR4+ and CDGR4+ specific
+        "Software-decision FEC (SFEC) mode is a cGR4+ and CDGR4+ specific
         FEC mode that is required to allow the optics to close links that
-        traverse OCS or circulators. CONTROLLERC is enabled by default on 200G
+        traverse OCS or circulators. SFEC is enabled by default on 200G
         and 400G links. These modules must be able to interoperate with
-        GFR4 modules, which do not support CONTROLLERC. Due to this we need the
-        ability to disable CONTROLLERC on cGR4+ when they are interoperating
+        GFR4 modules, which do not support SFEC. Due to this we need the
+        ability to disable SFEC on cGR4+ when they are interoperating
         with GFR4.";
     }
 
@@ -290,24 +290,24 @@ module google-pins-interfaces {
         the ethernet port then this leaf is exported as true.";
     }
 
-    leaf controllerc-oper-mode {
+    leaf sfec-oper-mode {
       default UNKNOWN;
       type enumeration {
         enum UNKNOWN {
           description
-            "The transceiver's CONTROLLERC configuration is not known.";
+            "The transceiver's SFEC configuration is not known.";
         }
         enum ENABLED {
           description
-            "The transceiver reports that CONTROLLERC is enabled.";
+            "The transceiver reports that SFEC is enabled.";
         }
         enum DISABLED {
           description
-            "The transceiver reports that CONTROLLERC is disabled.";
+            "The transceiver reports that SFEC is disabled.";
         }
       }
       description
-        "Soft-decision FEC (CONTROLLERC) mode as reported by the transceiver.";
+        "Soft-decision FEC (SFEC) mode as reported by the transceiver.";
     }
 
     leaf ingress-delay-applied {

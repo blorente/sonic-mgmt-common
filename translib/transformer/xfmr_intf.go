@@ -85,13 +85,13 @@ func init() {
 	XlateFuncBind("DbToYang_intf_eth_negotiated_port_speed_xfmr", DbToYang_intf_eth_negotiated_port_speed_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_forwarding_viable_xfmr", DbToYang_intf_eth_forwarding_viable_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_fec_mode_xfmr", DbToYang_intf_eth_fec_mode_xfmr)
-	XlateFuncBind("DbToYang_intf_eth_controllerc_mode_xfmr", DbToYang_intf_eth_controllerc_mode_xfmr)
+	XlateFuncBind("DbToYang_intf_eth_sfec_mode_xfmr", DbToYang_intf_eth_sfec_mode_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_ingress_delay_xfmr", DbToYang_intf_eth_ingress_delay_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_ingress_delay_applied_xfmr", DbToYang_intf_eth_ingress_delay_applied_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_egress_delay_xfmr", DbToYang_intf_eth_egress_delay_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_egress_delay_applied_xfmr", DbToYang_intf_eth_egress_delay_applied_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_state_pfc_enable_xfmr", DbToYang_intf_eth_state_pfc_enable_xfmr)
-	XlateFuncBind("DbToYang_intf_eth_controllerc_oper_mode_xfmr", DbToYang_intf_eth_controllerc_oper_mode_xfmr)
+	XlateFuncBind("DbToYang_intf_eth_sfec_oper_mode_xfmr", DbToYang_intf_eth_sfec_oper_mode_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_link_training_xfmr", DbToYang_intf_eth_link_training_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_xcvr_qualified_xfmr", DbToYang_intf_eth_xcvr_qualified_xfmr)
 	XlateFuncBind("YangToDb_intf_eth_port_config_xfmr", YangToDb_intf_eth_port_config_xfmr)
@@ -156,8 +156,8 @@ const (
 	ADV_PORT_SPEED             = "adv_speeds"
 	PORT_FEC                   = "fec"
 	ADV_PORT_FEC               = "adv_extended_fec_modes"
-	PORT_CONTROLLERC_MODE             = "controllerc_mode"
-	PORT_CONTROLLERC_OPER_MODE        = "controllerc_oper_mode"
+	PORT_SFEC_MODE             = "sfec_mode"
+	PORT_SFEC_OPER_MODE        = "sfec_oper_mode"
 	PORT_INGRESS_DELAY         = "ingress-delay"
 	PORT_EGRESS_DELAY          = "egress-delay"
 	PORT_INGRESS_DELAY_APPLIED = "ingress-delay-applied"
@@ -330,20 +330,20 @@ var yangToDbFecModeMap = map[ocbinds.E_OpenconfigIfEthernet_INTERFACE_FEC]string
 	ocbinds.OpenconfigIfEthernet_INTERFACE_FEC_FEC_RS544_2X_INTERLEAVE: "rs544-interleaved",
 }
 
-var dbToYangControllercModeMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode{
-	"disable": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_DISABLE,
-	"auto":    ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_AUTO,
+var dbToYangSfecModeMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode{
+	"disable": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_DISABLE,
+	"auto":    ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_AUTO,
 }
 
-var dbToYangControllercOperModeMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode{
-	"enable":  ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode_ENABLED,
-	"disable": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode_DISABLED,
-	UNKNOWN:   ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode_UNKNOWN,
+var dbToYangSfecOperModeMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode{
+	"enable":  ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode_ENABLED,
+	"disable": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode_DISABLED,
+	UNKNOWN:   ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode_UNKNOWN,
 }
 
-var yangToDbControllercModeMap = map[ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode]string{
-	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_DISABLE: "disable",
-	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_AUTO:    "auto",
+var yangToDbSfecModeMap = map[ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode]string{
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_DISABLE: "disable",
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_AUTO:    "auto",
 }
 
 var yangToDbEcmpHashAlgorithmMap = map[ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_EcmpHashAlgorithm]string{
@@ -2587,15 +2587,15 @@ var DbToYang_intf_eth_egress_delay_applied_xfmr FieldXfmrDbtoYang = func(inParam
 	return eth_delay_helper(inParams, PORT_EGRESS_DELAY, PORT_EGRESS_DELAY_APPLIED)
 }
 
-var DbToYang_intf_eth_controllerc_mode_xfmr FieldXfmrDbtoYang = func(inParams XfmrParams) (map[string]interface{}, error) {
+var DbToYang_intf_eth_sfec_mode_xfmr FieldXfmrDbtoYang = func(inParams XfmrParams) (map[string]interface{}, error) {
 	ifName := NewPathInfo(inParams.uri).Var("name")
 	intfType, _, err := getIntfTypeByName(ifName)
 	if err != nil || intfType == IntfTypeUnset {
-		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_controllerc_mode_xfmr - Invalid interface type IntfTypeUnset (intf=%v)", inParams.key)
+		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_sfec_mode_xfmr - Invalid interface type IntfTypeUnset (intf=%v)", inParams.key)
 		return nil, fmt.Errorf("Invalid interface - Type Unset: %v; err = %v", intfType == IntfTypeUnset, err)
 	}
 	if intfType != IntfTypeEthernet {
-		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_controllerc_mode_xfmr - Invalid interface type not IntfTypeEthernet (intf=%v)", inParams.key)
+		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_sfec_mode_xfmr - Invalid interface type not IntfTypeEthernet (intf=%v)", inParams.key)
 		return nil, nil
 	}
 
@@ -2605,64 +2605,64 @@ var DbToYang_intf_eth_controllerc_mode_xfmr FieldXfmrDbtoYang = func(inParams Xf
 	}
 	tblName, err := getPortTableNameByDBId(intTbl, inParams.curDb)
 	if err != nil {
-		return nil, fmt.Errorf("DbToYang_intf_eth_controllerc_mode_xfmr, %d table is not present in the Port Table (intf=%v)", inParams.curDb, inParams.key)
+		return nil, fmt.Errorf("DbToYang_intf_eth_sfec_mode_xfmr, %d table is not present in the Port Table (intf=%v)", inParams.curDb, inParams.key)
 	}
 	prtInst, err := getDBValues(inParams, tblName)
 	if err != nil {
-		return nil, fmt.Errorf("DbToYang_intf_eth_controllerc_mode_xfmr, field is not present in the table (intf=%v)", inParams.key)
+		return nil, fmt.Errorf("DbToYang_intf_eth_sfec_mode_xfmr, field is not present in the table (intf=%v)", inParams.key)
 	}
-	controllerc, ok := prtInst.Field[PORT_CONTROLLERC_MODE]
+	sfec, ok := prtInst.Field[PORT_SFEC_MODE]
 	if !ok {
-		return nil, fmt.Errorf("%s field not found in DB (intf=%v)", PORT_CONTROLLERC_MODE, inParams.key)
+		return nil, fmt.Errorf("%s field not found in DB (intf=%v)", PORT_SFEC_MODE, inParams.key)
 	}
-	controllercMode, ok := dbToYangControllercModeMap[controllerc]
+	sfecMode, ok := dbToYangSfecModeMap[sfec]
 	if !ok {
-		return nil, fmt.Errorf("%s DB field not valid(controllercMode=%v) (intf=%v)", PORT_CONTROLLERC_MODE, controllerc, inParams.key)
+		return nil, fmt.Errorf("%s DB field not valid(sfecMode=%v) (intf=%v)", PORT_SFEC_MODE, sfec, inParams.key)
 	}
 
 	result := map[string]interface{}{
-		"controllerc-mode": ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode.ΛMap(controllercMode)["E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode"][int64(controllercMode)].Name,
+		"sfec-mode": ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode.ΛMap(sfecMode)["E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode"][int64(sfecMode)].Name,
 	}
 
 	return result, nil
 }
 
-var DbToYang_intf_eth_controllerc_oper_mode_xfmr FieldXfmrDbtoYang = func(inParams XfmrParams) (map[string]interface{}, error) {
+var DbToYang_intf_eth_sfec_oper_mode_xfmr FieldXfmrDbtoYang = func(inParams XfmrParams) (map[string]interface{}, error) {
 	ifName := NewPathInfo(inParams.uri).Var("name")
 	intfType, _, err := getIntfTypeByName(ifName)
 	if err != nil || intfType == IntfTypeUnset {
-		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_controllerc_oper_mode_xfmr - Invalid interface type IntfTypeUnset (intf=%v)", inParams.key)
+		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_sfec_oper_mode_xfmr - Invalid interface type IntfTypeUnset (intf=%v)", inParams.key)
 		return nil, fmt.Errorf("Invalid interface - Type Unset: %v; err = %v", intfType == IntfTypeUnset, err)
 	}
 	if intfType != IntfTypeEthernet {
-		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_controllerc_oper_mode_xfmr - Invalid interface type not IntfTypeEthernet (intf=%v)", inParams.key)
+		log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_sfec_oper_mode_xfmr - Invalid interface type not IntfTypeEthernet (intf=%v)", inParams.key)
 		return nil, nil
 	}
 
 	intTbl, ok := IntfTypeTblMap[intfType]
 	if !ok {
-		return nil, errors.New("DbToYang_intf_eth_controllerc_oper_mode_xfmr: Invalid interface type not found in IntfTypeTblMap: " + inParams.key)
+		return nil, errors.New("DbToYang_intf_eth_sfec_oper_mode_xfmr: Invalid interface type not found in IntfTypeTblMap: " + inParams.key)
 	}
 	tblName, err := getPortTableNameByDBId(intTbl, inParams.curDb)
 	if err != nil {
-		return nil, fmt.Errorf("DbToYang_intf_eth_controllerc_oper_mode_xfmr, %d table is not present in the Port Table (intf=%v)", inParams.curDb, inParams.key)
+		return nil, fmt.Errorf("DbToYang_intf_eth_sfec_oper_mode_xfmr, %d table is not present in the Port Table (intf=%v)", inParams.curDb, inParams.key)
 	}
 	prtInst, err := getDBValues(inParams, tblName)
 	if err != nil {
-		return nil, fmt.Errorf("DbToYang_intf_eth_controllerc_oper_mode_xfmr, field is not present in the table (intf=%v)", inParams.key)
+		return nil, fmt.Errorf("DbToYang_intf_eth_sfec_oper_mode_xfmr, field is not present in the table (intf=%v)", inParams.key)
 	}
-	controllercOper, ok := prtInst.Field[PORT_CONTROLLERC_OPER_MODE]
+	sfecOper, ok := prtInst.Field[PORT_SFEC_OPER_MODE]
 	if !ok {
-		// If controllerc oper mode is not provided, return unknown
-		controllercOper = UNKNOWN
+		// If sfec oper mode is not provided, return unknown
+		sfecOper = UNKNOWN
 	}
-	controllercOperMode, ok := dbToYangControllercOperModeMap[controllercOper]
+	sfecOperMode, ok := dbToYangSfecOperModeMap[sfecOper]
 	if !ok {
-		return nil, fmt.Errorf("%s DB field not valid(controllercOper=%v) (intf=%v)", PORT_CONTROLLERC_OPER_MODE, controllercOper, inParams.key)
+		return nil, fmt.Errorf("%s DB field not valid(sfecOper=%v) (intf=%v)", PORT_SFEC_OPER_MODE, sfecOper, inParams.key)
 	}
 
 	result := map[string]interface{}{
-		"controllerc-oper-mode": ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode.ΛMap(controllercOperMode)["E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_ControllercOperMode"][int64(controllercOperMode)].Name,
+		"sfec-oper-mode": ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode.ΛMap(sfecOperMode)["E_OpenconfigInterfaces_Interfaces_Interface_Ethernet_State_SfecOperMode"][int64(sfecOperMode)].Name,
 	}
 
 	return result, nil
@@ -5025,7 +5025,7 @@ func validateSpeed(d *db.DB, ifName string, speed string) error {
 	return tlerr.InvalidArgs("Unsupported speed %s for interface: %s", speed, ifName)
 }
 
-// YangToDb_intf_eth_port_config_xfmr handles port-speed, port-fec xor fec-mode, controllerc-mode, unreliable-los, auto-neg, enable-pfc and aggregate-id config.
+// YangToDb_intf_eth_port_config_xfmr handles port-speed, port-fec xor fec-mode, sfec-mode, unreliable-los, auto-neg, enable-pfc and aggregate-id config.
 var YangToDb_intf_eth_port_config_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (map[string]map[string]db.Value, error) {
 	var err error
 	var lagStr string
@@ -5265,19 +5265,19 @@ var YangToDb_intf_eth_port_config_xfmr SubTreeXfmrYangToDb = func(inParams XfmrP
 		}
 		resMap[PORT_PFC_ENABLE] = enPfcStr
 	}
-	/* Handle controllerc-mode config */
-	controllercMode := intfObj.Ethernet.Config.ControllercMode
-	if controllercMode != ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_UNSET {
+	/* Handle sfec-mode config */
+	sfecMode := intfObj.Ethernet.Config.SfecMode
+	if sfecMode != ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_UNSET {
 		if inParams.oper == DELETE {
-			controllercMode = ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_ControllercMode_UNSET
+			sfecMode = ocbinds.OpenconfigInterfaces_Interfaces_Interface_Ethernet_Config_SfecMode_UNSET
 		}
-		controllercModeVal, ok := yangToDbControllercModeMap[controllercMode]
+		sfecModeVal, ok := yangToDbSfecModeMap[sfecMode]
 		if !ok {
-			err = tlerr.InvalidArgs("Invalid controllerc-mode %s", controllercMode)
-			log.V(lvl.ERROR).Info("Did not find controllerc-mode entry")
+			err = tlerr.InvalidArgs("Invalid sfec-mode %s", sfecMode)
+			log.V(lvl.ERROR).Info("Did not find sfec-mode entry")
 		}
-		resMap[PORT_CONTROLLERC_MODE] = controllercModeVal
-		log.V(lvl.DEBUG).Infof("Setting fec-mode: %s", controllercModeVal)
+		resMap[PORT_SFEC_MODE] = sfecModeVal
+		log.V(lvl.DEBUG).Infof("Setting fec-mode: %s", sfecModeVal)
 	}
 	/* Handle Mac-address config */
 	if intfObj.Ethernet.Config.MacAddress != nil {
@@ -5428,14 +5428,14 @@ var DbToYang_intf_eth_port_config_xfmr SubTreeXfmrDbToYang = func(inParams XfmrP
 			}
 		}
 
-		if controllerc_mode, ok := entry.Field[PORT_CONTROLLERC_MODE]; ok {
-			if controllercMode, ok := dbToYangControllercModeMap[controllerc_mode]; !ok {
-				log.V(lvl.DEBUG).Info("DbToYang_intf_eth_port_config_xfmr: controllerc-mode field not found in lookup table")
+		if sfec_mode, ok := entry.Field[PORT_SFEC_MODE]; ok {
+			if sfecMode, ok := dbToYangSfecModeMap[sfec_mode]; !ok {
+				log.V(lvl.DEBUG).Info("DbToYang_intf_eth_port_config_xfmr: sfec-mode field not found in lookup table")
 			} else {
-				intfObj.Ethernet.Config.ControllercMode = controllercMode
+				intfObj.Ethernet.Config.SfecMode = sfecMode
 			}
 		} else {
-			log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_port_config_xfmr: controllerc_mode not set in DB")
+			log.V(lvl.DEBUG).Infof("DbToYang_intf_eth_port_config_xfmr: sfec_mode not set in DB")
 		}
 
 		if ingress_delay, ok := entry.Field[PORT_INGRESS_DELAY]; ok {

@@ -638,7 +638,7 @@ module google-pins-platform {
       units Mbps;
       description
         "Overall (general) throughput performance of a hard disk drive.
-        Throughput is data trancontrollerr rate of a drive, which can be measured by
+        Throughput is data transfer rate of a drive, which can be measured by
         writing a large file to disk using special file generator tools, then
         reading back the file";
     }
