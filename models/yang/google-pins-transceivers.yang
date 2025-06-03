@@ -22,7 +22,19 @@ module google-pins-transceivers {
   description
     "Google Specific extensions to OpenConfig transport model.";
 
-  oc-ext:openconfig-version "0.10.0";
+  oc-ext:openconfig-version "0.12.0";
+
+  revision 2025-05-05 {
+    description
+      "Adding ETH_800GBASE_VM8 PMD and ETH_2X400GBASE_AOC PMD type.";
+    reference "0.12.0";
+  }
+
+  revision 2025-04-15 {
+    description
+      "Adding low power mode support for transceivers.";
+    reference "0.11.0";
+  }
 
   revision 2024-12-05 {
     description
@@ -175,6 +187,18 @@ module google-pins-transceivers {
     description
       "Ethernet compliance code: 2X400GBASE_2PSM4";
   }
+
+  identity ETH_800GBASE_VM8 {
+    base oc-opt-types:ETHERNET_PMD_TYPE;
+    description
+      "Ethernet compliance code: 800GBASE_VM8";
+  }
+
+  identity ETH_2X400GBASE_AOC {
+    base oc-opt-types:ETHERNET_PMD_TYPE;
+    description
+      "Ethernet compliance code: 2X400GBASE_AOC";
+  }
   // LINT.ThenChange(//depot/google3/net/infra/telemetry/pictormon/configs/fabric/sfpData.pb.txt:sfpPortSubtype)
 
   // grouping statements
@@ -232,6 +256,17 @@ module google-pins-transceivers {
     }
   }
 
+  grouping google-pins-transceiver-config {
+    description
+      "Configuration data for transceiver.";
+
+    leaf force-low-power {
+      description
+        "Enable low power mode for the transceiver.";
+      type boolean;
+    }
+  }
+
   // augment statements
   augment "/oc-platform:components/oc-platform:component/" +
           "oc-transceiver:transceiver/oc-transceiver:physical-channels/" +
@@ -247,7 +282,16 @@ module google-pins-transceivers {
     description
       "Augments transceiver state";
 
+    uses google-pins-transceiver-config;
     uses google-pins-transceiver-state;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/" +
+          "oc-transceiver:transceiver/oc-transceiver:config" {
+    description
+      "Augments transceiver config";
+
+    uses google-pins-transceiver-config;
   }
 
   // rpc statements

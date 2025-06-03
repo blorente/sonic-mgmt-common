@@ -603,6 +603,8 @@ var dbToYangEthPmdMap = map[string]ocbinds.E_OpenconfigTransportTypes_ETHERNET_P
 	"2X400G_FR4":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_FR4,
 	"2X200G_BGR4":            ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X200GBASE_BGR4,
 	"200G_BSM8+":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_200GBASE_BSM8_PLUS,
+	"800G_VM8":               ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_800GBASE_VM8,
+	"2X400G_AOC":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_AOC,
 	"PMD_UNKNOWN":            ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_UNDEFINED,
 }
 
@@ -4090,9 +4092,10 @@ func fillSysFirmwareInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 			firmwareCh.MacAddressPoolSize = &poolSizeVal
 		}
 		// Chassis Cpu Type
+		firmwareCh.CpuType = ocbinds.OpenconfigPinsPlatformChassis_CPU_TYPE_CPU_TYPE_UKNOWN
 		if firmwareInfo.CpuType != "" {
-			if cpy_type, ok := cpuTypeMap[firmwareInfo.CpuType]; ok {
-				firmwareCh.CpuType = cpy_type
+			if cpu_type, ok := cpuTypeMap[firmwareInfo.CpuType]; ok {
+				firmwareCh.CpuType = cpu_type
 			}
 		}
 	}
@@ -4213,9 +4216,10 @@ func fillSysFirmwareInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 	case FIRMWARE_CHASSIS_ALARMS_STATE_STATUS:
 		comp.Chassis.Alarms.State.Status = &firmwareInfo.AlarmStatus
 	case FIRMWARE_CHASSIS_OC_CPU_TYPE:
+		firmwareCh.CpuType = ocbinds.OpenconfigPinsPlatformChassis_CPU_TYPE_CPU_TYPE_UKNOWN
 		if firmwareInfo.CpuType != "" {
-			if cpy_type, ok := cpuTypeMap[firmwareInfo.CpuType]; ok {
-				firmwareCh.CpuType = cpy_type
+			if cpu_type, ok := cpuTypeMap[firmwareInfo.CpuType]; ok {
+				firmwareCh.CpuType = cpu_type
 			}
 		}
 	}

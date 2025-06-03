@@ -25,6 +25,12 @@ module sonic-loopback-interface {
             "Initial revision.";
     }
 
+    typedef ip-family {
+        type enumeration {
+            enum IPv4;
+            enum IPv6;
+        }
+    }
     container sonic-loopback-interface {
 
         container LOOPBACK_INTERFACE {
@@ -49,6 +55,19 @@ module sonic-loopback-interface {
                 leaf ip_prefix {
                     type inet:ip-prefix;
 
+                }
+
+                leaf family {
+
+                    /* family leaf needed for backward compatibility
+                       Both ip4 and ip6 address are string in IETF RFC 6021,
+                       so must statement can check based on : or ., family
+                       should be IPv4 or IPv6 according.
+                     */
+
+                    must "(contains(../ip_prefix, ':') and current()='IPv6') or
+                      (contains(../ip_prefix, '.') and current()='IPv4')";
+                    type ip-family;
                 }
             }
         }

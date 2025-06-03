@@ -14,7 +14,7 @@ import (
 
 const (
 	pollInterval     = 100 * time.Millisecond
-	lockPollAttempts = 10
+	lockPollAttempts = 10 * 3 // Up to 3 sec
 	ipPollAttempts   = 50
 )
 

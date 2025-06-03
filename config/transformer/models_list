@@ -6,6 +6,8 @@ openconfig-sampling-sflow.yang
 openconfig-sampling-annot.yang
 
 openconfig-interfaces.yang
+openconfig-if-ip.yang
+openconfig-if-aggregate.yang
 openconfig-interfaces-annot.yang
 openconfig-lacp.yang
 openconfig-lacp-annot.yang

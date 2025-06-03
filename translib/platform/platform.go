@@ -37,17 +37,18 @@ const (
 )
 
 type platformIntf struct {
-	index      int
-	subIndex   int
-	isPrimary  bool
-	name       string
-	alias      string
-	dfltMode   string   // Default breakout mode.
-	modes      []string // List of supported breakout modes.
-	lanes      []int    // For a given interface group, each interface has a slice of the same array
-	speedsGbps []int    // Possible speeds for the interface in Gbps
-	primary    *platformIntf
-	intfGroup  []*platformIntf // All interfaces in the group (including the primary)
+	index         int
+	subIndex      int
+	isPrimary     bool
+	name          string
+	alias         string
+	dfltMode      string   // Default breakout mode.
+	modes         []string // List of supported breakout modes.
+	lanes         []int    // For a given interface group, each interface has a slice of the same array
+	speedsGbps    []int    // Possible speeds for the interface in Gbps
+	primary       *platformIntf
+	intfGroup     []*platformIntf // All interfaces in the group (including the primary)
+	channelOffset uint16          // (First Lane) % (lane set size); used to derive channel index from lane
 }
 
 type InterfaceProperties struct {
@@ -337,6 +338,7 @@ func doParsePlatformJson(filename string) error {
 		platformCfg.intfNameToPortName[intfName] = portName
 		platformCfg.portNameToIntfName[portName] = intfName
 	}
+	calcChannelOffset()
 	log.V(lvl.DEBUG).Infof("Built port name maps for %d (%d) entries", len(platformCfg.intfNameToPortName), len(platformCfg.portNameToIntfName))
 
 	return nil
@@ -1045,4 +1047,27 @@ func PortNameFromInterface(intfName string) (string, error) {
 		return portName, nil
 	}
 	return "", errors.New("No port breakout config found for interface: " + intfName)
+}
+
+func calcChannelOffset() {
+	// Derive the channel offset for each primary interface
+	for _, intf := range platformCfg.intfs {
+		if !intf.isPrimary {
+			continue
+		}
+		intf.channelOffset = uint16(intf.lanes[0] % len(intf.lanes))
+
+		// Propogate the offset to the rest of the group
+		for _, i := range intf.intfGroup {
+			i.channelOffset = intf.channelOffset
+		}
+	}
+}
+
+func ChannelOffset(intfName string) (uint16, error) {
+	pIntf, err := platIntfByName(intfName)
+	if err != nil {
+		return 0, err
+	}
+	return pIntf.channelOffset, nil
 }

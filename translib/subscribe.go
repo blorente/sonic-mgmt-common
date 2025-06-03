@@ -287,7 +287,7 @@ func IsSubscribeSupported(req IsSubscribeRequest) ([]*IsSubscribeResponse, error
 		dbs:     dbs,
 		version: req.ClientVersion,
 		session: req.Session,
-		recurse: true,
+		recurse: false,
 	}
 
 	for i, p := range paths {

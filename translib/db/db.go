@@ -997,7 +997,8 @@ func (d *DB) GetKeysPattern(ts *TableSpec, pat Key) ([]Key, error) {
 // GetKeysByPattern retrieves all entry/row keys matching with the given pattern
 // Deprecated: use GetKeysPattern()
 func (d *DB) GetKeysByPattern(ts *TableSpec, pattern string) ([]Key, error) {
-	glog.V(lvl.WARNING).Info("GetKeysByPattern() is deprecated and it will be removed in the future, please use GetKeysPattern()")
+	/* Google: Remove this log noise, b/396202354 tracks this deprecation
+	glog.V(lvl.WARNING).Info("GetKeysByPattern() is deprecated and it will be removed in the future, please use GetKeysPattern()")*/
 	return d.GetKeysPattern(ts, Key{Comp: []string{pattern}})
 }
 

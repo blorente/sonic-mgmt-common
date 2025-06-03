@@ -19,3 +19,12 @@ func TestDeleteLagIntfAndMembers(t *testing.T) {
 		t.Fatalf("Call to deleteLagIntfAndMembers did not return an error as expected")
 	}
 }
+
+func TestUint16Conv(t *testing.T) {
+	if val, err := uint16Conv("12"); err != nil || val != 12 {
+		t.Fatalf("Call to uint16Conv did not return expected result (val=%v, err=%v)", val, err)
+	}
+	if _, err := uint16Conv("string"); err == nil {
+		t.Fatalf("Call to uint16Conv did not return an error as expected")
+	}
+}

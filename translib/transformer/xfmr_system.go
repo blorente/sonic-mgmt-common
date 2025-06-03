@@ -373,27 +373,6 @@ var YangToDb_sys_config_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (ma
 		resMap["config-meta-data"] = *sysObj.Config.ConfigMetaData
 	}
 
-	var err error
-	cfgDb := inParams.dbs[db.ConfigDB]
-	if cfgDb == nil {
-		cfgDb, err = db.NewDB(getDBOptions(db.ConfigDB))
-		if err != nil {
-			return nil, tlerr.InvalidArgsError{Format: err.Error()}
-		}
-		defer cfgDb.DeleteDB()
-	}
-	// Looking up and adding initial metadata in DEVICE_METADATA table back for b/199801106.
-	entry, err := cfgDb.GetEntry(&db.TableSpec{Name: "DEVICE_METADATA"}, db.Key{Comp: []string{"localhost"}})
-	if err != nil {
-		return nil, err
-	}
-	updateResMapFromDB(entry, "hwsku", resMap)
-	updateResMapFromDB(entry, "mac", resMap)
-	updateResMapFromDB(entry, "platform", resMap)
-	updateResMapFromDB(entry, "synchronous_mode", resMap)
-	updateResMapFromDB(entry, "zmq_mode", resMap)
-	updateResMapFromDB(entry, "type", resMap)
-
 	memMap := map[string]map[string]db.Value{
 		"DEVICE_METADATA": map[string]db.Value{
 			"localhost": db.Value{
@@ -401,6 +380,16 @@ var YangToDb_sys_config_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (ma
 			},
 		},
 	}
+
+	// In case of a Set Replace for the /system/config subtree, do an Update instead to
+	// preserve system-written fields in DEVICE_METADATA|localhost table (Ref:b/199801106)
+	if inParams.oper == REPLACE {
+		updateSubOpDataMap(map[db.DBNum]map[string]map[string]db.Value{
+			db.ConfigDB: memMap,
+		}, UPDATE, inParams)
+		return nil, nil
+	}
+
 	return memMap, nil
 }
 
@@ -485,28 +474,29 @@ func getSystemState(sysInfo *sysState, sysstate *ocbinds.OpenconfigSystem_System
 
 }
 
+func hostnameFromDb(d, cfgdb *db.DB) string {
+	if hostEntry, err := d.GetEntry(&db.TableSpec{Name: HOST_TBL}, db.Key{Comp: []string{HOSTNAME_KEY}}); err == nil {
+		return hostEntry.Get("hostname")
+	}
+	if entry, _ := d.GetEntry(&db.TableSpec{Name: "DEVICE_METADATA"}, db.Key{Comp: []string{"localhost"}}); entry.Get("hostname") != "" {
+		return entry.Get("hostname")
+	}
+
+	// TODO(b/383659899): Remove read from config db when statedb option is supported.
+	entry, _ := cfgdb.GetEntry(&db.TableSpec{Name: "DEVICE_METADATA"}, db.Key{Comp: []string{"localhost"}})
+	return entry.Get("hostname")
+}
+
 func getSysStateFromDb(d *db.DB, cfgDb *db.DB, applStateDb *db.DB) (*sysState, error) {
 	var sysInfo sysState
 
-	hostTbl, err := d.GetTable(&db.TableSpec{Name: HOST_TBL})
-	if err != nil {
-		log.V(lvl.DEBUG).Info("Can't get table: ", HOST_TBL)
-		return nil, err
-	}
+	sysInfo.Hostname = hostnameFromDb(d, cfgDb)
 
-	sysEntry, err := hostTbl.GetEntry(db.Key{Comp: []string{HOSTNAME_KEY}})
-	if err != nil {
-		log.V(lvl.DEBUG).Info("Can't get entry with key: ", HOSTNAME_KEY)
-		return nil, err
-	}
-	sysInfo.Hostname = sysEntry.Get("hostname")
-
-	lastConfigEntry, err := hostTbl.GetEntry(db.Key{Comp: []string{HOSTCONFIG_KEY}})
-	if err != nil {
+	if lastConfigEntry, err := d.GetEntry(&db.TableSpec{Name: HOST_TBL}, db.Key{Comp: []string{HOSTCONFIG_KEY}}); err != nil {
 		log.V(tlerr.ErrorSeverity(err)).Info("Can't get entry with key: ", HOSTCONFIG_KEY)
-		return nil, err
+	} else {
+		sysInfo.LastConfigurationTimestamp = lastConfigEntry.Get("last-configuration-timestamp")
 	}
-	sysInfo.LastConfigurationTimestamp = lastConfigEntry.Get("last-configuration-timestamp")
 
 	bootEntry, err := d.GetEntry(&db.TableSpec{Name: BOOT_INFO_TBL}, db.Key{Comp: []string{systemKey}})
 	if err != nil {

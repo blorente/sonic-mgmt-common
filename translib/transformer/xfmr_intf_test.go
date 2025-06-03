@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/Azure/sonic-mgmt-common/translib/db"
+	"github.com/Azure/sonic-mgmt-common/translib/ocbinds"
+	"github.com/openconfig/ygot/ygot"
 )
 
 func TestGetIntfsRoot(t *testing.T) {
@@ -84,5 +86,85 @@ func TestReadAndParseCounters(t *testing.T) {
 	}
 	if e := readAndParseCounters(&entry, fls); e == nil {
 		t.Fatalf("Expected a failure from parsing bad_int")
+	}
+}
+
+func TestDbToYang_intf_eth_aggr_id_xfmr(t *testing.T) {
+	var inParams XfmrParams
+	inParams.key = "FooBar"
+	if _, err := DbToYang_intf_eth_aggr_id_xfmr(inParams); err == nil {
+		t.Fatalf("Bad interface name didn't return an error")
+	}
+}
+
+func TestValidateIntfProvisionedForRelay(t *testing.T) {
+	ifName := "FooBar"
+	prefixIp := ""
+	if _, err := ValidateIntfProvisionedForRelay(nil, ifName, prefixIp, nil); err == nil {
+		t.Fatalf("Bad interface name didn't return an error")
+	}
+}
+
+func TestYangToDb_intf_ip_addr_xfmr(t *testing.T) {
+	var inParams XfmrParams
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]"
+	inParams.ygRoot = nil
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Nil yang root didn't return an error")
+	}
+
+	var device ocbinds.Device = ocbinds.Device{Interfaces: &ocbinds.OpenconfigInterfaces_Interfaces{Interface: make(map[string]*ocbinds.OpenconfigInterfaces_Interfaces_Interface)}}
+	var ygr ygot.GoStruct = &device
+	inParams.ygRoot = &ygr
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Empty interface yang root didn't return an error")
+	}
+
+	device.Interfaces.NewInterface("FooBar")
+	inParams.uri = "/interfaces/interface[name=]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Missing interface name key didn't return an error")
+	}
+
+	inParams.uri = "/interfaces/interface[name=FooBar]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Bad interface name didn't return an error")
+	}
+
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Good interface name but not in yang root didn't return an error")
+	}
+
+	device.Interfaces.NewInterface("Ethernet1/2/3")
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Subinterfaces not in yang root didn't return an error")
+	}
+
+	device.Interfaces.Interface["Ethernet1/2/3"].Subinterfaces = &ocbinds.OpenconfigInterfaces_Interfaces_Interface_Subinterfaces{}
+	device.Interfaces.Interface["Ethernet1/2/3"].Subinterfaces.NewSubinterface(1)
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]"
+	if _, err := YangToDb_intf_ip_addr_xfmr(inParams); err == nil {
+		t.Fatalf("Subinterface id not in yang root didn't return an error")
+	}
+}
+
+func TestYangToDb_ipv6_enabled_xfmr(t *testing.T) {
+	var inParams XfmrParams
+	inParams.uri = "/interfaces/interface[name=FooBar]/subinterfaces/subinterface[index=0]/ipv6/config/enabled"
+	if _, err := YangToDb_ipv6_enabled_xfmr(inParams); err == nil {
+		t.Fatalf("Invalid interface name didn't return an error")
+	}
+
+	inParams.uri = "/interfaces/interface[name=]/subinterfaces/subinterface[index=0]/ipv6/config/enabled"
+	if _, err := YangToDb_ipv6_enabled_xfmr(inParams); err == nil {
+		t.Fatalf("Missing interface name didn't return an error")
+	}
+
+	inParams.uri = "/interfaces/interface[name=Ethernet1/2/3]/subinterfaces/subinterface[index=0]/ipv6/config/enabled"
+	if rv, err := YangToDb_ipv6_enabled_xfmr(inParams); err != nil || len(rv) != 0 {
+		t.Fatalf("Nil inParams.param return an error or non-empty result")
 	}
 }
