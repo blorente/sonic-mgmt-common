@@ -20,12 +20,6 @@ func TestPopulateBrkoutMode(t *testing.T) {
 	}
 }
 
-func TestFetchAllPortsFromParentPort(t *testing.T) {
-	if _, err := fetchAllPortsFromParentPort("bad port name", nil); err == nil {
-		t.Errorf("Calling fetchAllPortsFromParentPort with a bad port name didn't return an error")
-	}
-}
-
 func TestModifyPortFootprintWithUnSupportedToMode(t *testing.T) {
 	configDb, _ := db.NewDB(db.Options{
 		DBNo:               db.ConfigDB,

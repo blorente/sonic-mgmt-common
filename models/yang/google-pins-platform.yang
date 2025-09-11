@@ -24,7 +24,55 @@ module google-pins-platform {
   description
     "Google Specific extensions to OpenConfig Platform model.";
 
-  oc-ext:openconfig-version "0.21.0";
+  oc-ext:openconfig-version "0.29.0";
+
+  revision 2025-07-30 {
+    description
+      "Add pcie link speed and width leaves.";
+    reference "0.29.0";
+  }
+
+  revision 2025-07-22 {
+    description
+      "Add CSIG stages augment.";
+    reference "0.28.0";
+  }
+
+  revision 2025-07-21 {
+    description
+      "Add CSIG information for Integrated Circuit.";
+    reference "0.27.0";
+  }
+
+  revision 2025-07-11 {
+    description
+      "Remove FANTRAY augment, with FAN_TRAY available.";
+    reference "0.26.0";
+  }
+
+  revision 2025-03-31 {
+    description
+      "Add component type enum for eeprom.";
+    reference "0.25.0";
+  }
+
+  revision 2025-03-28 {
+    description
+      "Add sensor type/leaves for humidity sensors.";
+    reference "0.24.0";
+  }
+
+  revision 2025-03-18 {
+    description
+      "Remove deprecated SSD leaves.";
+    reference "0.23.0";
+  }
+
+  revision 2025-02-26 {
+    description
+      "Add bad-intervals-duration.";
+    reference "0.22.0";
+  }
 
   revision 2024-11-27 {
     description
@@ -230,6 +278,12 @@ module google-pins-platform {
       "Exhaust temperature sensor on the chassis.";
   }
 
+  identity HUMIDITY_SENSOR {
+    base SENSOR_TYPE;
+    description
+      "Humidity sensor on the chassis.";
+  }
+
   identity SWITCH3 {
     base oc-pins-platform-chassis:PLATFORM_TYPE;
     description
@@ -242,10 +296,10 @@ module google-pins-platform {
       "Switch1 platform. See go/switch1 for more details.";
   }
 
-  identity TORSWITCH {
+  identity TORSWITCH1 {
     base oc-pins-platform-chassis:PLATFORM_TYPE;
     description
-      "Torswitch platform. See go/torswitch for more details.";
+      "Torswitch1 platform. See go/torswitch1 for more details.";
   }
 
   identity SWITCH4 {
@@ -306,6 +360,12 @@ module google-pins-platform {
     base oc-platform-types:OPENCONFIG_HARDWARE_COMPONENT;
     description
       "Component to house multiple cooling fans";
+  }
+
+  identity EEPROM {
+    base oc-platform-types:OPENCONFIG_HARDWARE_COMPONENT;
+    description
+      "Eeprom component.";
   }
 
   // grouping statements
@@ -663,20 +723,6 @@ module google-pins-platform {
         cycles or available reserved blocks";
     }
 
-    leaf avg-erase-count {
-      type uint32;
-      description
-        "This attribute is used to collect the average number of user area
-        block erasures.";
-    }
-
-    leaf max-erase-count {
-      type uint32;
-      description
-        "This attribute is used to collect the maximum number of user area
-        block erasures.";
-    }
-
     leaf power-cycle-count {
       type uint32;
       description
@@ -874,6 +920,14 @@ module google-pins-platform {
       }
       description
         "Type of sensor component.";
+    }
+
+    leaf instant {
+      type decimal64 {
+        fraction-digits 1;
+      }
+      description
+        "Instantaneous value of the sensor.";
     }
   }
 
@@ -1181,6 +1235,115 @@ module google-pins-platform {
     }
   }
 
+  grouping google-pins-pcie-status {
+    description
+      "Top level grouping for the augments of the PCIe status.";
+
+    leaf pins-link-speed {
+      type decimal64 {
+        fraction-digits 1;
+      }
+      units GTps;
+      description
+        "The PCIe link speed in gigatransfers per second (GT/s).";
+    }
+
+    leaf pins-link-width {
+      type uint32;
+      description
+        "The PCIe link width in number of lanes.";
+    }
+  }
+
+ grouping google-pins-csig {
+    description
+      "Top level grouping for the augments of the CSIG component.";
+
+    container pins-csig {
+      description
+        "Google specific augments for the CSIG component.";
+
+      container config {
+        description
+          "Configuration data for the CSIG component.";
+
+        uses google-pins-csig-info;
+      }
+
+      container state {
+        config false;
+        description
+          "Operational state data for the CSIG component.";
+
+        uses google-pins-csig-info;
+      }
+
+    }
+  }
+
+  grouping google-pins-csig-info {
+    description
+      "Google specific state for CSIG components.";
+
+    leaf csig-supported {
+      type enumeration {
+        enum NOT_SUPPORTED {
+          description
+            "CSIG is not supported.";
+        }
+        enum SW_SUPPORTED {
+          description
+            "Software assisted CSIG.";
+        }
+        enum HW_SUPPORTED {
+          description
+            "Hardware natively supports CSIG.";
+        }
+      }
+      description
+        "Whether the CSIG is supported or not in the IC.";
+    }
+
+    leaf csig-stage {
+      type enumeration {
+        enum UNKNOWN {
+          description
+            "CSIG stage is unknown.";
+        }
+        enum TOR {
+          description
+            "CSIG stage is ToR";
+        }
+        enum MB_S2 {
+          description
+            "CSIG stage is S2 (Middle Block)";
+        }
+        enum MB_S3 {
+          description
+            "CSIG stage is S3 (Middle Block)";
+        }
+        enum FBR_S2 {
+          description
+            "CSIG stage is S2 (FBR)";
+        }
+        enum FBR_S3 {
+          description
+            "CSIG stage is S3 (FBR)";
+        }
+      }
+      description
+        "Describes the stage of the switch in the network fabric. This is used
+        to determine the CSIG tag value to be set on the packet.";
+    }
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:integrated-circuit" {
+     description
+      "Adds Google specific CSIG configuration and state for an integrated circuit component.";
+
+    uses google-pins-csig;
+  }
+
   augment "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature" {
     description
       "Adds Google specific temperature state for platform components.";
@@ -1241,6 +1404,11 @@ module google-pins-platform {
     description
       "Adds Google specific state for integrated-circuit component.";
 
+    leaf bad-intervals-duration {
+      type oc-yang:counter64;
+      description
+        "The duration of bad intervals feature.";
+    }
     uses google-pins-diag-top;
   }
 
@@ -1254,7 +1422,13 @@ module google-pins-platform {
     uses google-pins-hardware-security-module;
   }
 
+  augment "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:pcie" {
+    description
+      "Adds Google specific state for pcie component.";
+
+    uses google-pins-pcie-status;
+  }
+
   // rpc statements
   // notification statements
 }
-

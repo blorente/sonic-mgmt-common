@@ -469,6 +469,21 @@ func TestTransaction(t *testing.T) {
 	}
 }
 
+func TestTransactionNegativeCases(t *testing.T) {
+	for transRun := TransRunBasic; transRun < TransRunEnd; transRun++ {
+		transRunString := fmt.Sprint(transRun)
+		t.Run("FailBeforeMulti"+transRunString, func(t *testing.T) {
+			testTransactionFailBeforeMulti(t, transRun)
+		})
+		t.Run("UnwatchKeyDuringMulti"+transRunString, func(t *testing.T) {
+			testTransactionUnwatchKeyDuringMulti(t, transRun)
+		})
+		t.Run("WithInvalidTxCmd"+transRunString, func(t *testing.T) {
+			testTransactionWithInvalidTxCmd(t, transRun)
+		})
+	}
+}
+
 type TransRun int
 
 const (
@@ -505,6 +520,83 @@ func TestTransactionCache(t *testing.T) {
 	// Tests without any data pre-existing in DB
 	for transRun := TransCacheRunGetAfterCreate; transRun <= TransCacheRunEnd; transRun++ {
 		testTransactionCache(t, transRun)
+	}
+}
+
+//TestTransactionCacheWithDBContentKeys
+/*
+Add a new entry for a table who has already has one entry pre-exisint in DB and performs below checks.
+1. GetKeys checks for number of required required
+2. DeleteEntry and then GetKeys, checks for number of required required
+*/
+func TestTransactionCacheWithDBContentKeys(t *testing.T) {
+
+	var pid int = os.Getpid()
+
+	d, e := NewDB(Options{
+		DBNo:                    ConfigDB,
+		InitIndicator:           "",
+		TableNameSeparator:      "|",
+		KeySeparator:            "|",
+		DisableCVLCheck:         true,
+		ForceNewRedisConnection: true,
+	})
+
+	if d == nil {
+		t.Errorf("NewDB() fails e = %v", e)
+		return
+	}
+
+	e = d.StartTx(nil, nil)
+
+	ts := TableSpec{Name: "TEST_" + strconv.FormatInt(int64(pid), 10)}
+
+	ca := make([]string, 1, 1)
+	ca[0] = "MyACL1_ACL_IPVNOTEXIST"
+	akey := Key{Comp: ca}
+	avalue := Value{map[string]string{"ports@": "Ethernet0", "type": "MIRROR"}}
+	e = d.SetEntry(&ts, akey, avalue)
+	if e != nil {
+		t.Errorf("SetEntry() fails e = %v", e)
+		return
+	}
+	v, e := d.GetEntry(&ts, akey)
+	if (e != nil) || (!reflect.DeepEqual(v, avalue)) {
+		t.Errorf("GetEntry() after Tx fails e = %v", e)
+		return
+	}
+	e = d.CommitTx()
+
+	if e != nil {
+		t.Errorf("CommitTx() fails e = %v", e)
+		return
+	}
+	e = d.StartTx(nil, nil)
+	keys, e := d.GetKeys(&ts) //DB get verify
+
+	if (e != nil) || (len(keys) != 1) || (!keys[0].Equals(akey)) {
+		t.Errorf("GetKeys() fails e = %v", e)
+		return
+	}
+	e = d.DeleteEntry(&ts, akey)
+	if e != nil {
+		t.Errorf("DeleteEntry() fails e = %v", e)
+		return
+	}
+	keys, e = d.GetKeys(&ts) //Cache get verify
+
+	if (e != nil) || (len(keys) != 0) {
+		t.Errorf("GetKeys() fails e = %v", e)
+		return
+	}
+	e = d.CommitTx()
+	if e != nil {
+		t.Errorf("CommitTx() fails e = %v", e)
+		return
+	}
+
+	if e = d.DeleteDB(); e != nil {
+		t.Errorf("DeleteDB() fails e = %v", e)
 	}
 }
 
@@ -693,83 +785,6 @@ func TestTransactionCacheMultiKeysPattern(t *testing.T) {
 		return
 	}
 
-	e = d.CommitTx()
-	if e != nil {
-		t.Errorf("CommitTx() fails e = %v", e)
-		return
-	}
-
-	if e = d.DeleteDB(); e != nil {
-		t.Errorf("DeleteDB() fails e = %v", e)
-	}
-}
-
-//TestTransactionCacheWithDBContentKeys
-/*
-Add a new entry for a table who has already has one entry pre-exisint in DB and performs below checks.
-1. GetKeys checks for number of required required
-2. DeleteEntry and then GetKeys, checks for number of required required
-*/
-func TestTransactionCacheWithDBContentKeys(t *testing.T) {
-
-	var pid int = os.Getpid()
-
-	d, e := NewDB(Options{
-		DBNo:                    ConfigDB,
-		InitIndicator:           "",
-		TableNameSeparator:      "|",
-		KeySeparator:            "|",
-		DisableCVLCheck:         true,
-		ForceNewRedisConnection: true,
-	})
-
-	if d == nil {
-		t.Errorf("NewDB() fails e = %v", e)
-		return
-	}
-
-	e = d.StartTx(nil, nil)
-
-	ts := TableSpec{Name: "TEST_" + strconv.FormatInt(int64(pid), 10)}
-
-	ca := make([]string, 1, 1)
-	ca[0] = "MyACL1_ACL_IPVNOTEXIST"
-	akey := Key{Comp: ca}
-	avalue := Value{map[string]string{"ports@": "Ethernet0", "type": "MIRROR"}}
-	e = d.SetEntry(&ts, akey, avalue)
-	if e != nil {
-		t.Errorf("SetEntry() fails e = %v", e)
-		return
-	}
-	v, e := d.GetEntry(&ts, akey)
-	if (e != nil) || (!reflect.DeepEqual(v, avalue)) {
-		t.Errorf("GetEntry() after Tx fails e = %v", e)
-		return
-	}
-	e = d.CommitTx()
-
-	if e != nil {
-		t.Errorf("CommitTx() fails e = %v", e)
-		return
-	}
-	e = d.StartTx(nil, nil)
-	keys, e := d.GetKeys(&ts) //DB get verify
-
-	if (e != nil) || (len(keys) != 1) || (!keys[0].Equals(akey)) {
-		t.Errorf("GetKeys() fails e = %v", e)
-		return
-	}
-	e = d.DeleteEntry(&ts, akey)
-	if e != nil {
-		t.Errorf("DeleteEntry() fails e = %v", e)
-		return
-	}
-	keys, e = d.GetKeys(&ts) //Cache get verify
-
-	if (e != nil) || (len(keys) != 0) {
-		t.Errorf("GetKeys() fails e = %v", e)
-		return
-	}
 	e = d.CommitTx()
 	if e != nil {
 		t.Errorf("CommitTx() fails e = %v", e)
@@ -1374,44 +1389,13 @@ func testTransactionCache(t *testing.T, transRun TransRun) {
 }
 
 func testTransaction(t *testing.T, transRun TransRun) {
-
-	var pid int = os.Getpid()
-
-	d, e := NewDB(Options{
-		DBNo:                    ConfigDB,
-		InitIndicator:           "",
-		TableNameSeparator:      "|",
-		KeySeparator:            "|",
-		DisableCVLCheck:         true,
-		ForceNewRedisConnection: true,
-	})
-
-	if d == nil {
-		t.Errorf("NewDB() fails e = %v, transRun = %v", e, transRun)
+	d, watchKeys, akey, avalue, table, e := testTransactionSetup(t, transRun)
+	if e != nil {
+		t.Errorf("Transaction Setup fails e = %v", e)
 		return
 	}
 
-	ts := TableSpec{Name: "TEST_" + strconv.FormatInt(int64(pid), 10)}
-
-	ca := make([]string, 1, 1)
-	ca[0] = "MyACL1_ACL_IPVNOTEXIST"
-	akey := Key{Comp: ca}
-	avalue := Value{map[string]string{"ports@": "Ethernet0", "type": "MIRROR"}}
-
-	var watchKeys []WatchKeys
-	var table []*TableSpec
-
-	switch transRun {
-	case TransRunBasic, TransRunWatchKeysAndTable:
-		watchKeys = []WatchKeys{{Ts: &ts, Key: &akey}}
-		table = []*TableSpec{&ts}
-	case TransRunWatchKeys, TransRunFailWatchKeys:
-		watchKeys = []WatchKeys{{Ts: &ts, Key: &akey}}
-		table = []*TableSpec{}
-	case TransRunTable, TransRunFailTable:
-		watchKeys = []WatchKeys{}
-		table = []*TableSpec{&ts}
-	}
+	defer d.DeleteDB()
 
 	e = d.StartTx(watchKeys, table)
 
@@ -1534,6 +1518,186 @@ func testTransaction(t *testing.T, transRun TransRun) {
 
 	if e = d.DeleteDB(); e != nil {
 		t.Errorf("DeleteDB() fails e = %v", e)
+	}
+}
+
+func testTransactionSetup(t *testing.T, transRun TransRun) (*DB, []WatchKeys, Key, Value, []*TableSpec, error) {
+	var pid int = os.Getpid()
+
+	var watchKeys []WatchKeys
+	var table []*TableSpec
+
+	emptyTs := TableSpec{Name: ""}
+	emptyk := Key{Comp: []string{}}
+	emptyV := Value{map[string]string{}}
+
+	d, e := NewDB(Options{
+		DBNo:                    ConfigDB,
+		InitIndicator:           "",
+		TableNameSeparator:      "|",
+		KeySeparator:            "|",
+		DisableCVLCheck:         true,
+		ForceNewRedisConnection: true,
+	})
+
+	if d == nil {
+		t.Errorf("NewDB() fails e = %v, transRun = %v", e, transRun)
+		return nil, watchKeys, emptyk, emptyV, table, e
+	}
+
+	ts := TableSpec{Name: "TEST_" + strconv.FormatInt(int64(pid), 10)}
+
+	ca := make([]string, 1, 1)
+	ca[0] = "MyACL1_ACL_IPVNOTEXIST"
+	akey := Key{Comp: ca}
+	avalue := Value{map[string]string{"ports@": "Ethernet0", "type": "MIRROR"}}
+
+	switch transRun {
+	case TransRunBasic, TransRunWatchKeysAndTable:
+		watchKeys = []WatchKeys{{Ts: &ts, Key: &akey}, {Ts: &emptyTs, Key: &emptyk}}
+		table = []*TableSpec{&ts, &emptyTs}
+	case TransRunWatchKeys, TransRunFailWatchKeys:
+		watchKeys = []WatchKeys{{Ts: &ts, Key: &akey}, {Ts: &emptyTs, Key: &emptyk}}
+		table = []*TableSpec{}
+	case TransRunTable, TransRunFailTable:
+		watchKeys = []WatchKeys{}
+		table = []*TableSpec{&ts, &emptyTs}
+	}
+
+	return d, watchKeys, akey, avalue, table, nil
+}
+
+func transactionNegativeCaseEndStateVarification(t *testing.T, txState _txState, txCmds []_txCmd) {
+	if txState != txStateNone {
+		t.Errorf("txState should be reset to txStateNone")
+	}
+	if len(txCmds) != 0 {
+		t.Errorf("txCmds should get cleaned up")
+	}
+}
+
+func testTransactionFailBeforeMulti(t *testing.T, transRun TransRun) {
+	d, watchKeys, akey, avalue, table, e := testTransactionSetup(t, transRun)
+	if e != nil {
+		t.Errorf("Transaction Setup fails e = %v", e)
+		return
+	}
+
+	defer d.DeleteDB()
+
+	e = d.StartTx(watchKeys, table)
+	if e != nil {
+		t.Errorf("StartTx() fails e = %v", e)
+		return
+	}
+
+	e = d.SetEntry(&ts, akey, avalue)
+	if e != nil {
+		t.Errorf("SetEntry() fails e = %v", e)
+		return
+	}
+
+	if len(d.txCmds) == 0 {
+		t.Errorf("d.txCmds should not be empty")
+	}
+
+	// Interrupt CommitTx
+	d.txState = txStateMultiExec
+	e = d.CommitTx()
+	if e == nil {
+		t.Errorf("CommitTx() should fail")
+	}
+
+	// Verify end state
+	transactionNegativeCaseEndStateVarification(t, d.txState, d.txCmds)
+}
+
+func testTransactionUnwatchKeyDuringMulti(t *testing.T, transRun TransRun) {
+	d, watchKeys, akey, avalue, table, e := testTransactionSetup(t, transRun)
+	if e != nil {
+		t.Errorf("Transaction Setup fails e = %v", e)
+		return
+	}
+
+	defer d.DeleteDB()
+
+	e = d.StartTx(watchKeys, table)
+	if e != nil {
+		t.Errorf("StartTx() fails e = %v", e)
+		return
+	}
+
+	e = d.AbortTx()
+	if e != nil {
+		t.Errorf("AbortTx() fails e = %v", e)
+		return
+	}
+
+	e = d.SetEntry(&ts, akey, avalue)
+	if e != nil {
+		t.Errorf("SetEntry() fails e = %v", e)
+		return
+	}
+
+	e = d.CommitTx()
+	if e == nil {
+		t.Errorf("CommitTx() should fail")
+	}
+
+	// Verify end state
+	transactionNegativeCaseEndStateVarification(t, d.txState, d.txCmds)
+}
+
+func testTransactionWithInvalidTxCmd(t *testing.T, transRun TransRun) {
+	d, watchKeys, akey, avalue, table, e := testTransactionSetup(t, transRun)
+	if e != nil {
+		t.Errorf("Transaction Setup fails e = %v", e)
+		return
+	}
+
+	defer d.DeleteDB()
+
+	emptyTs := TableSpec{Name: ""}
+	emptyk := Key{Comp: []string{}}
+	emptyV := Value{map[string]string{}}
+
+	inValidTxCmds := [3]_txCmd{
+		_txCmd{
+			ts:    &ts,
+			op:    txOpNone,
+			key:   &akey,
+			value: &avalue,
+		},
+		_txCmd{
+			ts:    &emptyTs,
+			op:    txOpHMSet,
+			key:   &emptyk,
+			value: &emptyV,
+		},
+		_txCmd{
+			ts:    &emptyTs,
+			op:    txOpHDel,
+			key:   &emptyk,
+			value: &emptyV,
+		},
+	}
+
+	for _, testTxCmd := range inValidTxCmds {
+		e := d.StartTx(watchKeys, table)
+		if e != nil {
+			t.Errorf("StartTx() fails e = %v", e)
+			return
+		}
+
+		d.txCmds = append(d.txCmds, testTxCmd)
+
+		e = d.CommitTx()
+		if e == nil {
+			t.Errorf("CommitTx() should fail")
+		}
+
+		// Verify end state
+		transactionNegativeCaseEndStateVarification(t, d.txState, d.txCmds)
 	}
 }
 

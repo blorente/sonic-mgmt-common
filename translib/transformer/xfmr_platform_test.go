@@ -53,6 +53,10 @@ func TestComponentTypeString(t *testing.T) {
 		{CompTypePowerSupplyPB, "CompTypePowerSupplyPB"},
 		{CompTypePowerSupplyPH, "CompTypePowerSupplyPH"},
 		{CompTypePowerSupplyPSEQ, "CompTypePowerSupplyPSEQ"},
+		{CompTypeControllerCard, "CompTypeControllerCard"},
+		{CompTypeDiskCarrier, "CompTypeDiskCarrier"},
+		{CompTypeEepromStatus, "CompTypeEepromStatus"},
+		{CompTypeHumidity, "CompTypeHumidity"},
 	}
 	for _, c := range cases {
 		got := c.in.String()

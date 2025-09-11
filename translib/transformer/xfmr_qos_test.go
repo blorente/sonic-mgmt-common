@@ -1,7 +1,10 @@
 package transformer
 
 import (
+	"sync"
 	"testing"
+
+	"github.com/Azure/sonic-mgmt-common/translib/ocbinds"
 )
 
 func TestInvalidQueueTypes(t *testing.T) {
@@ -28,4 +31,27 @@ func TestPathTransformersInvalidKeys(t *testing.T) {
 	if err := DbToYangPath_qos_scheduler_policy_path_xfmr(inParams); err == nil {
 		t.Errorf("Expected an error from DbToYangPath_qos_scheduler_policy_path_xfmr, but got %v", err)
 	}
+}
+
+func TestQueueMapMutexContention(t *testing.T) {
+	iterations := 100
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iterations; i++ {
+			queueMapMutex.RLock()
+			handleSingleQueuePopulate("queuename", &ocbinds.OpenconfigQos_Qos_Queues{})
+			queueMapMutex.RUnlock()
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iterations; i++ {
+			commitToGlobalMap(map[string]map[string]string{})
+		}
+	}()
+	wg.Wait()
 }

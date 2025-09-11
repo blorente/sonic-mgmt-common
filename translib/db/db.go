@@ -106,7 +106,6 @@ import (
 	"fmt"
 	"strconv"
 
-	//	"reflect"
 	"errors"
 	"strings"
 	"time"
@@ -1780,6 +1779,90 @@ SkipWatch:
 	return first_e
 }
 
+func doDels(txCmds []_txCmd, tsmap map[TableSpec]bool, d *DB) error {
+	var e error = nil
+	for i := 0; i < len(d.txCmds); i++ {
+
+		var args []interface{}
+
+		// Add TS to the map of watchTables
+		tsmap[*(d.txCmds[i].ts)] = true
+
+		if d.txCmds[i].op == txOpDel {
+
+			redisKey := d.key2redis(d.txCmds[i].ts, *(d.txCmds[i].key))
+
+			args = make([]interface{}, 0, 2)
+			args = append(args, "DEL", redisKey)
+
+			glog.V(lvl.DEBUG).Info("CommitTx: Do: ", args)
+
+			if _, e = d.client.Do(context.Background(), args...).Result(); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
+}
+
+func doRemainingOps(txCmds []_txCmd, tsmap map[TableSpec]bool, d *DB) error {
+	var e error = nil
+	for i := 0; i < len(d.txCmds); i++ {
+
+		var args []interface{}
+
+		// Add TS to the map of watchTables
+		tsmap[*(d.txCmds[i].ts)] = true
+
+		switch d.txCmds[i].op {
+
+		case txOpHMSet:
+
+			redisKey := d.key2redis(d.txCmds[i].ts, *(d.txCmds[i].key))
+
+			args = make([]interface{}, 0, len(d.txCmds[i].value.Field)*2+2)
+			args = append(args, "HMSET", redisKey)
+
+			for k, v := range d.txCmds[i].value.Field {
+				args = append(args, k, v)
+			}
+
+			glog.V(lvl.DEBUG).Info("CommitTx: Do: ", args)
+
+			if _, e = d.client.Do(context.Background(), args...).Result(); e != nil {
+				return e
+			}
+
+		case txOpHDel:
+
+			redisKey := d.key2redis(d.txCmds[i].ts, *(d.txCmds[i].key))
+
+			args = make([]interface{}, 0, len(d.txCmds[i].value.Field)+2)
+			args = append(args, "HDEL", redisKey)
+
+			for k := range d.txCmds[i].value.Field {
+				args = append(args, k)
+			}
+
+			glog.V(lvl.DEBUG).Info("CommitTx: Do: ", args)
+
+			if _, e = d.client.Do(context.Background(), args...).Result(); e != nil {
+				return e
+			}
+
+		case txOpDel:
+			continue
+		default:
+			e = fmt.Errorf("Unknown Op: %v", d.txCmds[i].op)
+		}
+
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
 // CommitTx method is used by infra to commit a check-and-set Transaction.
 func (d *DB) commitTx() error {
 	if glog.V(lvl.DEBUG) {
@@ -1819,70 +1902,21 @@ func (d *DB) commitTx() error {
 
 	// Issue MULTI
 	glog.V(lvl.DEBUG).Info("CommitTx: Do: MULTI")
-	_, e = d.client.Do(context.Background(), "MULTI").Result()
-
-	if e != nil {
-		glog.V(lvl.WARNING).Info("CommitTx: Do: MULTI e: ", e.Error())
-		goto CommitTxExit
+	if _, e = d.client.Do(context.Background(), "MULTI").Result(); e != nil {
+		glog.V(lvl.ERROR).Info("CommitTx: Do: MULTI e: ", e.Error())
+		goto CommitTxDiscard
 	}
 
-	// For each cmd in txCmds
-	//   Invoke it
-	for i := 0; i < len(d.txCmds); i++ {
-
-		var args []interface{}
-
-		redisKey := d.key2redis(d.txCmds[i].ts, *(d.txCmds[i].key))
-
-		// Add TS to the map of watchTables
-		tsmap[*(d.txCmds[i].ts)] = true
-
-		switch d.txCmds[i].op {
-
-		case txOpHMSet:
-
-			args = make([]interface{}, 0, len(d.txCmds[i].value.Field)*2+2)
-			args = append(args, "HMSET", redisKey)
-
-			for k, v := range d.txCmds[i].value.Field {
-				args = append(args, k, v)
-			}
-
-			_, e = d.client.Do(context.Background(), args...).Result()
-
-		case txOpHDel:
-
-			args = make([]interface{}, 0, len(d.txCmds[i].value.Field)+2)
-			args = append(args, "HDEL", redisKey)
-
-			for k := range d.txCmds[i].value.Field {
-				args = append(args, k)
-			}
-
-			_, e = d.client.Do(context.Background(), args...).Result()
-
-		case txOpDel:
-
-			args = make([]interface{}, 0, 2)
-			args = append(args, "DEL", redisKey)
-
-			_, e = d.client.Do(context.Background(), args...).Result()
-
-		default:
-			glog.Error("CommitTx: Unknown, op: ", d.txCmds[i].op)
-			e = errors.New("Unknown Op: " + string(rune(d.txCmds[i].op)))
-		}
-
-		glog.V(lvl.DEBUG).Info("CommitTx: RedisCmd: ", d.Name(), ": ", args)
-
-		if e != nil {
-			glog.V(lvl.WARNING).Info("CommitTx: Do: ", args, " e: ", e.Error())
-			break
-		}
+	// Pass through txCmds twice, processing table deletes on the first pass.
+	// This sequencing enables the BE to reduce resource utilization
+	if e = doDels(d.txCmds, tsmap, d); e != nil {
+		glog.V(lvl.ERROR).Info("CommitTx: doDels error", e.Error())
+		goto CommitTxDiscard
 	}
 
-	if e != nil {
-		goto CommitTxExit
+	if e = doRemainingOps(d.txCmds, tsmap, d); e != nil {
+		glog.V(lvl.ERROR).Info("CommitTx: doSets error", e.Error())
+		goto CommitTxDiscard
 	}
 
 	// Flag the Tables as updated.
@@ -1890,30 +1924,32 @@ func (d *DB) commitTx() error {
 		if glog.V(4) {
 			glog.Info("CommitTx: Do: SET ", d.ts2redisUpdated(&ts), " 1")
 		}
-		_, e = d.client.Do(context.Background(), "SET", d.ts2redisUpdated(&ts), "1").Result()
-		if e != nil {
-			glog.V(lvl.WARNING).Info("CommitTx: Do: SET ",
+		if _, e = d.client.Do(context.Background(), "SET", d.ts2redisUpdated(&ts), "1").Result(); e != nil {
+			glog.V(lvl.ERROR).Info("CommitTx: Do: SET ",
 				d.ts2redisUpdated(&ts), " 1: e: ",
 				e.Error())
-			break
+			goto CommitTxDiscard
 		}
 	}
 
-	if e != nil {
-		goto CommitTxExit
-	}
-
 	if e = d.markConfigDBUpdated(); e != nil {
-		goto CommitTxExit
+		goto CommitTxDiscard
 	}
 
 	// Issue EXEC
 	glog.V(lvl.DEBUG).Info("CommitTx: Do: EXEC")
-	_, e = d.client.Do(context.Background(), "EXEC").Result()
-
-	if e != nil {
+	if _, e = d.client.Do(context.Background(), "EXEC").Result(); e != nil {
 		glog.V(lvl.WARNING).Info("CommitTx: Do: EXEC e: ", e.Error())
 		e = tlerr.TranslibTransactionFail{}
+	}
+
+CommitTxDiscard:
+	if e != nil {
+		// If there is any error during MULTI, discard queue and return error
+		_, de := d.client.Do(context.Background(), "DISCARD").Result()
+		if de != nil {
+			glog.V(lvl.ERROR).Info("CommitTx: End: Error in discard MULTI queue, e: ", de.Error())
+		}
 	}
 
 CommitTxExit:

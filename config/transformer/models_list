@@ -28,11 +28,16 @@ openconfig-platform-transceiver.yang
 openconfig-platform-types.yang
 openconfig-platform.yang
 
+
+
+
+
+
 openconfig-optical-switch.yang
 openconfig-optical-switch-annot.yang
 sonic-optical-switch.yang
 
-sonic-
+
 
 openconfig-qos.yang
 google-pins-qos.yang

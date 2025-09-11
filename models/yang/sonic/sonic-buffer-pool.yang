@@ -39,6 +39,11 @@ module sonic-buffer-pool {
                 leaf type {
                     type string;
                 }
+
+                leaf xoff {
+                    type uint64;
+                }
+
             }
         }
     }

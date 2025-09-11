@@ -75,6 +75,39 @@ module sonic-mgmt-port {
                     default up;
                 }
 
+                leaf bond-downdelay {
+                    type uint32;
+                }
+
+                leaf bond-updelay {
+                    type uint32;
+                }
+
+                leaf bond-lacp-rate {
+                    type uint32 {
+                        range "0..1" {
+                            error-message "Valid values are slow (0) and fast (1).";
+                            error-app-tag mgmt-bond-lacp-rate-invalid;
+                        }
+                    }
+                }
+
+                leaf bond-miimon {
+                    type uint32;
+                }
+
+                leaf bond-mode {
+                    type string {
+                        pattern "(balance-rr|active-backup|balance-xor|broadcast|802.3ad|balance-tlb|balance-alb)" {
+                            error-message "Valid values are balance-rr|active-backup|balance-xor|broadcast|802.3ad|balance-tlb|balance-alb.";
+                            error-app-tag mgmt-bond-mode-invalid;
+                        }
+                    }
+                }
+
+                leaf bond-slaves {
+                    type string;
+                }
             }
 
         }

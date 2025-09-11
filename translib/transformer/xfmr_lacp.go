@@ -1021,7 +1021,7 @@ var YangToDb_lacp_intfs_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (ma
 			return nil, tlerr.InvalidArgsError{Format: err.Error()}
 		}
 		if intfType != IntfTypePortChannel {
-			return nil, errors.New("YangToDb_lacp_intf_config_xfmr, Error: Expected IntfTypePortChannel interface type: " + ifName)
+			return nil, errors.New("YangToDb_lacp_intfs_xfmr, Error: Expected IntfTypePortChannel interface type: " + ifName)
 		}
 
 		resMap := make(map[string]string)
@@ -1126,7 +1126,7 @@ var YangToDb_lacp_intfs_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (ma
 
 		intTbl, ok := IntfTypeTblMap[intfType]
 		if !ok {
-			log.V(lvl.DEBUG).Infof("YangToDb_lacp_intf_config_xfmr intTbl not found : ", intfType)
+			log.V(lvl.DEBUG).Infof("YangToDb_lacp_intfs_xfmr intTbl not found : ", intfType)
 			return nil, errors.New("intTbl not found.")
 		}
 		subOpMap := make(map[db.DBNum]map[string]map[string]db.Value)
@@ -1135,7 +1135,7 @@ var YangToDb_lacp_intfs_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (ma
 				ifName: db.Value{Field: resMap},
 			},
 		}
-		log.V(lvl.DEBUG).Infof("YangToDb_lacp_intf_config_xfmr: %s|%s resMap=%v", intTbl.cfgDb.portTN, ifName, resMap)
+		log.V(lvl.DEBUG).Infof("YangToDb_lacp_intfs_xfmr: %s|%s resMap=%v", intTbl.cfgDb.portTN, ifName, resMap)
 		subOpMap[db.ConfigDB] = memMap
 		updateSubOpDataMap(subOpMap, UPDATE, inParams)
 	}

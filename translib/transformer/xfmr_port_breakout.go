@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -395,39 +396,22 @@ func getRefCount(port string) (int, error) {
 	return refCount, nil
 }
 
-func fetchAllPortsFromParentPort(port string, appstdb *db.DB) ([]string, error) {
-	var portList []string
-	childPortList, err := platform.PrimaryIntfToChildIntfs(port)
-	if err != nil {
-		return nil, err
-	}
-	// Loop through all possible child ports and add to portList only if
-	// the Appl State DB is present.
-	for _, intfName := range childPortList {
-		if _, err := appstdb.GetEntry(&db.TableSpec{Name: "PORT_TABLE"}, db.Key{Comp: []string{intfName}}); err == nil {
-			portList = append(portList, intfName)
-		}
-	}
-	return portList, nil
-}
-func foundFlowProgramming(port string, inParams XfmrParams) error {
+func foundFlowProgramming(cfgdb *db.DB, ports []platform.InterfaceProperties) error {
 	appstdb, err := db.NewDB(getDBOptions(db.ApplStateDB))
 	if err != nil {
 		log.V(lvl.ERROR).Info(err.Error())
 		return err
 	}
 	defer appstdb.DeleteDB()
-	portList, err := fetchAllPortsFromParentPort(port, appstdb)
-	if err != nil {
-		return tlerr.InvalidArgs("failed to get list of child ports from parent port: " + err.Error())
-	}
-	for _, ifName := range portList {
+
+	for _, p := range ports {
+		ifName := p.Name
 		refCount, err := getRefCount(ifName)
 		if err != nil {
 			return err
 		}
 		// By default, an unnumbered subinterface is created from the config_db.json file.
-		if _, err = inParams.d.GetEntry(&db.TableSpec{Name: "INTERFACE"}, db.Key{Comp: []string{ifName}}); err != nil {
+		if _, err = cfgdb.GetEntry(&db.TableSpec{Name: "INTERFACE"}, db.Key{Comp: []string{ifName}}); err != nil {
 			log.V(lvl.WARNING).Infof("INTERFACE not found in Config DB for port %v; err = %v", ifName, err)
 		}
 		intfEntryCnt := 0
@@ -576,44 +560,41 @@ func modifyPortFootprint(pport, from_mode, to_mode string, inParams XfmrParams) 
 		return err
 	}
 
-	doBreakout := true
-	if haveSamePortNames(portsInCfg, currPortsInDb) {
-		laneSetChange, err := haveLaneSetsChanged(pport, from_mode, to_mode)
-		if err != nil {
-			log.V(lvl.ERROR).Infof("No breakout happen for %v. Err: %v", pport, err)
-			return err
-		}
-		doBreakout = laneSetChange
+	laneSetChanged, err := haveLaneSetsChanged(pport, from_mode, to_mode)
+	if err != nil {
+		log.V(lvl.ERROR).Infof("No breakout happen for %v. Err: %v", pport, err)
+		return err
 	}
 
 	// 1. No breakout action if no change in breakout mode or only port-speed change.
-	if !doBreakout {
+	if haveSamePortNames(portsInCfg, currPortsInDb) && !laneSetChanged {
 		log.V(lvl.DEBUG).Info("No change in port breakout mode.")
 		return nil
 	}
 
-	// For b/207409758, check if the breakout mode is same as the previous mode
-	// and skip port breakout in that case. This check should take place before
-	// the ref count check.
-	if err := foundFlowProgramming(pport, inParams); err != nil {
+	// 2. Only remove the port with lane set changed
+	portsToDelete := findPortsToDelete(currPortsInDb, portsInCfg)
+
+	// 3. Check the if there is flow on the port.
+	if err := foundFlowProgramming(inParams.d, portsToDelete); err != nil {
 		return err
 	}
 
-	// 2. Remove ports.
-	delMap, err := removePorts(currPortsInDb, portsInCfg)
+	// 4. Remove ports.
+	delMap, err := removePorts(portsToDelete, portsInCfg)
 	if err != nil {
 		return err
 	}
 	updateSubOpDataMap(delMap, DELETE, inParams)
 	log.V(lvl.DEBUG).Info("PORTS IN CONFIG DB: ", currPortsInDb)
 
-	// 3. Add ports.
+	// 5. Add ports.
 	addMap := addPorts(portsInCfg)
 	updateSubOpDataMap(addMap, CREATE, inParams)
 	log.V(lvl.DEBUG).Info("PORTS IN CONFIG: ", portsInCfg)
 
-	// 4. Lock ports by writing pending_delete to DB directly, set unlock required signal.
-	if err := updatePendingDelete(currPortsInDb, inParams); err != nil {
+	// 6. Lock ports by writing pending_delete to DB directly, set unlock required signal.
+	if err := updatePendingDelete(portsToDelete, inParams); err != nil {
 		return err
 	}
 
@@ -621,6 +602,28 @@ func modifyPortFootprint(pport, from_mode, to_mode string, inParams XfmrParams) 
 	return nil
 }
 
+func findPortsToDelete(currPortsInDb []platform.InterfaceProperties, portsInCfg []platform.InterfaceProperties) []platform.InterfaceProperties {
+	deletablePorts := make(map[string]platform.InterfaceProperties)
+
+	// Construct the map to track deletable ports.
+	// All ports in config_db are possible to be deleted
+	for _, cur := range currPortsInDb {
+		deletablePorts[cur.Name] = cur
+	}
+
+	// Filter out the no lane change and no speed change port from deletablePorts
+	for _, cfg := range portsInCfg {
+		if cur, ok := deletablePorts[cfg.Name]; ok && slices.Equal(cfg.Lanes, cur.Lanes) && cfg.SpeedMbps == cur.SpeedMbps {
+			delete(deletablePorts, cfg.Name)
+		}
+	}
+
+	var portsToDelete []platform.InterfaceProperties
+	for _, port := range deletablePorts {
+		portsToDelete = append(portsToDelete, port)
+	}
+	return portsToDelete
+}
 func generatePortInConfigPortsList(pport, to_mode string, intfsObj *ocbinds.OpenconfigInterfaces_Interfaces, currPortsInDb []platform.InterfaceProperties, oper Operation) ([]platform.InterfaceProperties, error) {
 	target_ports, err := platform.IntfsFromBrkoutMode(pport, to_mode)
 	if err != nil {

@@ -39,26 +39,31 @@ import (
 )
 
 const (
-	PSU_TBL            = "PSU_INFO"
-	FAN_TBL            = "FAN_INFO"
-	FAN_TRAY_TBL       = "FAN_DRAWER_INFO"
-	TRANSCEIVER_TBL    = "TRANSCEIVER_INFO"
-	TRANSCEIVER_STATUS = "TRANSCEIVER_STATUS"
-	TRANSCEIVER_DOM    = "TRANSCEIVER_DOM_SENSOR"
-	FPGA_TBL           = "FPGA_INFO"
-	PORT_TBL           = "PORT_TABLE"
-	BREAKOUT_TBL       = "BREAKOUT_CFG"
-	PORT_BREAKOUT      = "PORT_BREAKOUT"
-	STORAGE_INFO       = "STORAGE_INFO"
-	SWITCH_EVENT       = "SWITCH_EVENT"
-	NODE_CFG_TBL       = "NODE_CFG"
-	SW_COMP_TBL        = "SW_COMP_INFO"
-	CHASSIS_CFG        = "CHASSIS_CFG"
-	CHASSIS_TBL        = "CHASSIS_INFO"
-	HSM_TBL            = "FW_SECURITY_INFO"
-	PCIE_TBL           = "PCIE_DEVICE"
-	POWER_INFO_TBL     = "POWER_INFO"
-	TEMP_TBL           = "TEMPERATURE_INFO"
+	PSU_TBL             = "PSU_INFO"
+	FAN_TBL             = "FAN_INFO"
+	FAN_TRAY_TBL        = "FAN_DRAWER_INFO"
+	TRANSCEIVER_TBL     = "TRANSCEIVER_INFO"
+	TRANSCEIVER_STATUS  = "TRANSCEIVER_STATUS"
+	TRANSCEIVER_DOM     = "TRANSCEIVER_DOM_SENSOR"
+	FPGA_TBL            = "FPGA_INFO"
+	PORT_TBL            = "PORT_TABLE"
+	BREAKOUT_TBL        = "BREAKOUT_CFG"
+	PORT_BREAKOUT       = "PORT_BREAKOUT"
+	STORAGE_INFO        = "STORAGE_INFO"
+	DISK_CARRIER_TBL    = "DISK_CARRIER_INFO"
+	SWITCH_EVENT        = "SWITCH_EVENT"
+	NODE_CFG_TBL        = "NODE_CFG"
+	SW_COMP_TBL         = "SW_COMP_INFO"
+	CHASSIS_CFG         = "CHASSIS_CFG"
+	CHASSIS_TBL         = "CHASSIS_INFO"
+	HSM_TBL             = "FW_SECURITY_INFO"
+	PCIE_TBL            = "PCIE_DEVICE"
+	POWER_INFO_TBL      = "POWER_INFO"
+	PHYS_ENTITY_TBL     = "PHYSICAL_ENTITY_INFO"
+	CONTROLLER_CARD_TBL = "CONTROLLER_CARD_INFO"
+	HUMIDITY_SENSOR_TBL = "HUMIDITY_INFO"
+	EEPROM_STATUS_TBL   = "EEPROM_STATUS_INFO"
+	TEMP_TBL            = "TEMPERATURE_INFO"
 
 	XCVR_LANE_LIMIT = 8
 
@@ -75,6 +80,8 @@ const (
 	PB_PREFIX           = "power_brick"
 	PH_PREFIX           = "hotswap"
 	PSEQ_PREFIX         = "power_sequencer"
+	FAN_TRAY_PREFIX     = "FanTray"
+	FAN_TRAY_SUFFIX     = "_fan_drawer"
 
 	/** Transceiver status values **/
 	SFP_STATUS_REMOVED  = "0"
@@ -112,6 +119,11 @@ const (
 	COMP_STATE_TEMP_MAX     = "/openconfig-platform:components/component/state/temperature/max"
 	COMP_STATE_TEMP_INTV    = "/openconfig-platform:components/component/state/temperature/interval"
 
+	/** Supported PCIe component URIs **/
+	COMP_STATE_PCIE                          = "/openconfig-platform:components/component/state/pcie"
+	COMP_STATE_PCIE_CORRECTABLE_ERRORS       = "/openconfig-platform:components/component/state/pcie/correctable-errors"
+	COMP_STATE_PCIE_CORRECTABLE_ERRORS_TOTAL = "/openconfig-platform:components/component/state/pcie/correctable-errors/total-errors"
+
 	/** Supported Fpga component URIs **/
 	FPGA_GO_COMP              = "/openconfig-platform:components/component/google-pins-platform:fpga"
 	FPGA_GO_COMP_RESET_COUNT  = "/openconfig-platform:components/component/google-pins-platform:fpga/state/reset-count"
@@ -130,8 +142,6 @@ const (
 	G_STORAGE_RSC     = "/openconfig-platform:components/component/storage/state/google-pins-platform:reallocated-sector-count"
 	G_STORAGE_POS     = "/openconfig-platform:components/component/storage/state/google-pins-platform:power-on-seconds"
 	G_STORAGE_SLL     = "/openconfig-platform:components/component/storage/state/google-pins-platform:ssd-life-left"
-	G_STORAGE_AEC     = "/openconfig-platform:components/component/storage/state/google-pins-platform:avg-erase-count"
-	G_STORAGE_MEC     = "/openconfig-platform:components/component/storage/state/google-pins-platform:max-erase-count"
 	G_STORAGE_PCC     = "/openconfig-platform:components/component/storage/state/google-pins-platform:power-cycle-count"
 	G_STORAGE_USCOL   = "/openconfig-platform:components/component/storage/state/google-pins-platform:uncorrectable-sector-count-on-line"
 	G_STORAGE_NPS     = "/openconfig-platform:components/component/storage/state/google-pins-platform:num-pure-spare"
@@ -203,17 +213,21 @@ const (
 	COMP_SENSOR              = "/openconfig-platform:components/component/google-pins-platform:sensor"
 	COMP_SENSOR_ST           = "/openconfig-platform:components/component/google-pins-platform:sensor/state"
 	SENSOR_STATE_SENSOR_TYPE = "/openconfig-platform:components/component/google-pins-platform:sensor/state/sensor-type"
+	SENSOR_STATE_INSTANT     = "/openconfig-platform:components/component/google-pins-platform:sensor/state/instant"
 
 	/** Supported Integrated Circuit URIs **/
-	COMP_IC         = "/openconfig-platform:components/component/integrated-circuit"
-	COMP_IC_CFG     = "/openconfig-platform:components/component/integrated-circuit/config"
-	COMP_IC_ST      = "/openconfig-platform:components/component/integrated-circuit/state"
-	COMP_IC_ST_BH   = "/openconfig-platform:components/component/integrated-circuit/state/google-pins-platform:blackhole"
-	COMP_IC_ST_CG   = "/openconfig-platform:components/component/integrated-circuit/state/google-pins-platform:congestion"
-	COMP_IC_PLC     = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-pipeline-counters:pipeline-counters"
-	COMP_IC_MEM     = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory"
-	COMP_IC_MEM_CPE = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory/state/corrected-parity-errors"
-	COMP_IC_MEM_TPE = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory/state/total-parity-errors"
+	COMP_IC                    = "/openconfig-platform:components/component/integrated-circuit"
+	COMP_IC_CFG                = "/openconfig-platform:components/component/integrated-circuit/config"
+	COMP_IC_ST                 = "/openconfig-platform:components/component/integrated-circuit/state"
+	COMP_IC_ST_BH              = "/openconfig-platform:components/component/integrated-circuit/state/google-pins-platform:blackhole"
+	COMP_IC_ST_CG              = "/openconfig-platform:components/component/integrated-circuit/state/google-pins-platform:congestion"
+	COMP_IC_ST_BI              = "/openconfig-platform:components/component/integrated-circuit/state/google-pins-platform:bad-intervals-duration"
+	COMP_IC_PLC                = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-pipeline-counters:pipeline-counters"
+	COMP_IC_MEM                = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory"
+	COMP_IC_MEM_CPE            = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory/state/corrected-parity-errors"
+	COMP_IC_MEM_TPE            = "/openconfig-platform:components/component/integrated-circuit/openconfig-platform-integrated-circuit:memory/state/total-parity-errors"
+	COMP_IC_CSIG_SUPPORTED_CFG = "/opneconfig-platform:components/component/integrated-circuit/google-pins-platform:pins-csig/google-pins-platform:config/google-pins-platform:csig-supported"
+	COMP_IC_CSIG_SUPPORTED_ST  = "/openconfig-platform:components/component/integrated-circuit/google-pins-platform:pins-csig/google-pins-platform:state/google-pins-platform:csig-supported"
 
 	/** Supported oc-platform component config URIs **/
 	COMP_CFG_OC_FQ_NAME = "/openconfig-platform:components/component/config/openconfig-pins-platform:fully-qualified-name"
@@ -272,8 +286,11 @@ type PSU struct {
 		Output_Voltage string
 	*/
 	Presence      bool
+	Part_Number   string
 	Serial_Number string
 	Status        bool
+	Parent        string
+	Location      string
 	Volt_Type     string
 }
 
@@ -328,11 +345,19 @@ type TempSensor struct {
 	Timestamp           string
 }
 
+type HumiditySensor struct {
+	Name             string
+	Parent           string
+	RelativeHumidity string
+}
+
 /*Storage structure read from State DB*/
 type Storage struct {
 	Name                           string
 	PartNo                         string
 	SerialNo                       string
+	Parent                         string
+	OperStatus                     string
 	IOErrors                       string
 	Removable                      string
 	WriteAmplificationFactor       string
@@ -341,8 +366,6 @@ type Storage struct {
 	ReallocatedSectorCount         string
 	PowerOnSeconds                 string
 	SsdLifeLeft                    string
-	AvgEraseCount                  string
-	MaxEraseCount                  string
 	PowerCycleCount                string
 	UncorrectableSectorCountOnLine string
 	NumPureSpare                   string
@@ -369,6 +392,14 @@ type Storage struct {
 	FlashWriteCount                string
 }
 
+type DiskCarrier struct {
+	Model_Name    string
+	Name          string
+	Parent        string
+	Part_Number   string
+	Serial_Number string
+}
+
 /*IC structure read from State DB*/
 type IC struct {
 	Node_Id                   string
@@ -379,12 +410,18 @@ type IC struct {
 	CorrectedParityErrors     uint64
 }
 
+/* CSIG information structure from DB */
+type CsigInfo struct {
+	csigSupported string
+}
+
 /*Port structure read from DB*/
 type Port struct {
-	Name         string
-	Parent       string
-	PortID       string
-	BreakoutMode string
+	Name            string
+	Parent          string
+	PortID          string
+	BreakoutMode    string
+	FirmwareVersion string
 }
 
 /*Firmware Chassis structure read from State DB*/
@@ -458,6 +495,20 @@ type PowerSupplyInfo struct {
 	RailTemperature     string
 }
 
+type ControllerCard struct {
+	Model_Name    string
+	Name          string
+	Parent        string
+	Part_Number   string
+	Serial_Number string
+}
+
+type EepromStatus struct {
+	Name                 string
+	Status               string
+	NumCorrectableErrors string
+}
+
 type PathType int
 
 const (
@@ -508,8 +559,8 @@ const (
 var platformTypeMap = map[string]ocbinds.E_OpenconfigPinsPlatformChassis_PLATFORM_TYPE{
 	"generic":                ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_GENERIC,
 	"BX":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_SWITCH1,
-	"TA":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_TORSWITCH,
-	"TS":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_TORSWITCH, // Tauri
+	"TA":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_TORSWITCH1,
+	"TS":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_TORSWITCH1, // Torswitch2
 	"alpine_vs":              ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_ALPINEVS,
 	"MS":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_SWITCH4,
 	"HL":                     ocbinds.OpenconfigPinsPlatformChassis_PLATFORM_TYPE_SWITCH2,
@@ -534,6 +585,15 @@ var moduleStatusMap = map[string]ocbinds.E_OpenconfigPlatform_Components_Compone
 	"ModuleFault":          ocbinds.OpenconfigPlatform_Components_Component_Transceiver_State_ModuleStatus_MODULE_STATUS_FAULT,
 	"ModuleStateUndefined": ocbinds.OpenconfigPlatform_Components_Component_Transceiver_State_ModuleStatus_MODULE_STATUS_UNDEFINED,
 	"N/A":                  ocbinds.OpenconfigPlatform_Components_Component_Transceiver_State_ModuleStatus_MODULE_STATUS_UNKNOWN,
+}
+
+var eepromOperStatusMap = map[string]ocbinds.E_OpenconfigPlatformTypes_COMPONENT_OPER_STATUS{
+	"GOOD":                ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE,
+	"CORRECTABLE_ERROR":   ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE,
+	"UNCORRECTABLE_ERROR": ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE,
+	"INCOMPLETE_DATA":     ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE,
+	"UNEXPECTED_DATA":     ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE,
+	"NOT_PROCESSED":       ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE,
 }
 
 var cpuTypeMap = map[string]ocbinds.E_OpenconfigPinsPlatformChassis_CPU_TYPE{
@@ -596,6 +656,7 @@ var dbToYangEthPmdMap = map[string]ocbinds.E_OpenconfigTransportTypes_ETHERNET_P
 	"400G_AOC":               ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_400G_AOC,
 	"2X400G_CR4":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_CR4,
 	"2X400G_DR4":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_DR4,
+	"2X400G_2PSM4":           ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_2PSM4,
 	"2X400G_PSM4":            ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_PSM4,
 	"2X200G_CGR4+":           ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X200GBASE_CGR4_PLUS,
 	"2X400G_CDGR4+":          ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_CDGR4_PLUS,
@@ -606,6 +667,18 @@ var dbToYangEthPmdMap = map[string]ocbinds.E_OpenconfigTransportTypes_ETHERNET_P
 	"800G_VM8":               ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_800GBASE_VM8,
 	"2X400G_AOC":             ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_2X400GBASE_AOC,
 	"PMD_UNKNOWN":            ocbinds.OpenconfigTransportTypes_ETHERNET_PMD_TYPE_ETH_UNDEFINED,
+}
+
+var yangToDbCsigSupportedMap = map[ocbinds.E_OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported]string{
+	ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_NOT_SUPPORTED: "none",
+	ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_SW_SUPPORTED:  "sw_assist",
+	ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_HW_SUPPORTED:  "hw_assist",
+}
+
+var dbToYangCsigSupportedMap = map[string]ocbinds.E_OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported{
+	"none":      ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_NOT_SUPPORTED,
+	"sw_assist": ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_SW_SUPPORTED,
+	"hw_assist": ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_PinsCsig_Config_CsigSupported_HW_SUPPORTED,
 }
 
 func getDbToYangEthPmd(dbVal string) ocbinds.E_OpenconfigTransportTypes_ETHERNET_PMD_TYPE {
@@ -634,8 +707,10 @@ const (
 	CompTypeFanTray
 	CompTypeFpga
 	CompTypeStorage
+	CompTypeDiskCarrier
 	CompTypeXcvr
 	CompTypeTemp
+	CompTypeHumidity
 	CompTypeIC
 	CompTypeChassis
 	CompTypeNWStack
@@ -648,12 +723,20 @@ const (
 	CompTypePowerSupplyPB
 	CompTypePowerSupplyPH
 	CompTypePowerSupplyPSEQ
+	CompTypeControllerCard
+	CompTypeEepromStatus
 )
 
 func (ct componentType) String() string {
 	switch ct {
 	case CompTypeInvalid:
 		return "CompTypeInvalid"
+	case CompTypeControllerCard:
+		return "CompTypeControllerCard"
+	case CompTypeDiskCarrier:
+		return "CompTypeDiskCarrier"
+	case CompTypeEepromStatus:
+		return "CompTypeEepromStatus"
 	case CompTypePsu:
 		return "CompTypePsu"
 	case CompTypeFan:
@@ -668,6 +751,8 @@ func (ct componentType) String() string {
 		return "CompTypeXcvr"
 	case CompTypeTemp:
 		return "CompTypeTemp"
+	case CompTypeHumidity:
+		return "CompTypeHumidity"
 	case CompTypeIC:
 		return "CompTypeIC"
 	case CompTypeChassis:
@@ -700,9 +785,10 @@ var compTblMap = map[componentType][]string{
 	CompTypePsu:              {PSU_TBL, "PSU *"},
 	CompTypeFpga:             {FPGA_TBL, "fpga_*"},
 	CompTypeFan:              {FAN_TBL, "fan*"},
-	CompTypeFanTray:          {FAN_TRAY_TBL, "FanTray*"},
+	CompTypeFanTray:          {FAN_TRAY_TBL, "*"},
 	CompTypeXcvr:             {TRANSCEIVER_STATUS, XCVR_KEY_PREFIX + "*"},
 	CompTypeTemp:             {TEMP_TBL, "*_sensor*"},
+	CompTypeHumidity:         {HUMIDITY_SENSOR_TBL, "humidity_*"},
 	CompTypeIC:               {NODE_CFG_TBL, IC_NAME_PREFIX + "*"},
 	CompTypeChassis:          {CHASSIS_TBL, CHASSIS_PREFIX},
 	CompTypeNWStack:          {SW_COMP_TBL, NW_STACK_PREFIX + "*"},
@@ -710,12 +796,15 @@ var compTblMap = map[componentType][]string{
 	CompTypeBootLoader:       {SW_COMP_TBL, BOOTL_PREFIX + "*"},
 	CompTypePort:             {PORT_BREAKOUT, ""},
 	CompTypeStorage:          {STORAGE_INFO, STORAGE_NAME_PREFIX},
+	CompTypeDiskCarrier:      {DISK_CARRIER_TBL, "*"},
 	CompTypeHwSecurityModule: {HSM_TBL, "*"},
 	CompTypePcie:             {PCIE_TBL, "*"},
 	CompTypePowerSupplyVR:    {POWER_INFO_TBL, VR_PREFIX + "*"},
 	CompTypePowerSupplyPB:    {POWER_INFO_TBL, PB_PREFIX + "*"},
 	CompTypePowerSupplyPH:    {POWER_INFO_TBL, PH_PREFIX + "*"},
 	CompTypePowerSupplyPSEQ:  {POWER_INFO_TBL, PSEQ_PREFIX + "*"},
+	CompTypeControllerCard:   {CONTROLLER_CARD_TBL, "*"},
+	CompTypeEepromStatus:     {EEPROM_STATUS_TBL, "*"},
 }
 
 func getCompType(name string, d *db.DB) (componentType, error) {
@@ -723,13 +812,18 @@ func getCompType(name string, d *db.DB) (componentType, error) {
 	if err == nil {
 		return compType, nil
 	}
-	// Storage type derivation doesn't rely on a prefix check, but a table scan
-	if _, err = d.GetEntry(&db.TableSpec{Name: STORAGE_INFO}, db.Key{Comp: []string{name}}); err == nil {
-		return CompTypeStorage, nil
+	// For some types, derivation doesn't rely on a prefix check, but a table scan.
+	componentTableMap := map[componentType]string{
+		CompTypeControllerCard: CONTROLLER_CARD_TBL,
+		CompTypeStorage:        STORAGE_INFO,
+		CompTypeDiskCarrier:    DISK_CARRIER_TBL,
+		CompTypePcie:           PCIE_TBL,
+		CompTypeEepromStatus:   EEPROM_STATUS_TBL,
 	}
-	// Pcie type derivation doesn't rely on a prefix check, but a table scan.
-	if _, err = d.GetEntry(&db.TableSpec{Name: PCIE_TBL}, db.Key{Comp: []string{name}}); err == nil {
-		return CompTypePcie, nil
+	for compType, tblName := range componentTableMap {
+		if _, err = d.GetEntry(&db.TableSpec{Name: tblName}, db.Key{Comp: []string{name}}); err == nil {
+			return compType, nil
+		}
 	}
 	return CompTypeInvalid, errors.New("unable to derive component type for " + name)
 }
@@ -748,6 +842,8 @@ func getCompTypeByName(compName string) (componentType, error) {
 		return CompTypeXcvr, nil
 	case validTempName(&compName) || validCpuName(compName):
 		return CompTypeTemp, nil
+	case validHumidityName(compName):
+		return CompTypeHumidity, nil
 	case validICName(&compName):
 		return CompTypeIC, nil
 	case strings.HasPrefix(compName, CHASSIS_PREFIX):
@@ -824,6 +920,14 @@ func compTypeToFuncCall(cType componentType, compName, subKey string, pfComp *oc
 		return fillSysPcieInfo(pfComp, compName, pType, targetUriPath, d)
 	case CompTypePowerSupplyVR, CompTypePowerSupplyPB, CompTypePowerSupplyPH, CompTypePowerSupplyPSEQ:
 		return fillPowerSupplyInfo(pfComp, compName, "", pType, targetUriPath, d)
+	case CompTypeControllerCard:
+		return fillControllerCardInfo(pfComp, compName, pType, targetUriPath, d)
+	case CompTypeDiskCarrier:
+		return fillDiskCarrierInfo(pfComp, compName, pType, targetUriPath, d)
+	case CompTypeHumidity:
+		return fillSysHumidityInfo(pfComp, compName, pType, targetUriPath, d)
+	case CompTypeEepromStatus:
+		return fillEepromStatusInfo(pfComp, compName, pType, targetUriPath, d)
 	}
 	return errors.New("Invalid component type")
 }
@@ -833,6 +937,8 @@ func init() {
 	XlateFuncBind("DbToYangPath_pfm_components_path_xfmr", DbToYangPath_pfm_components_path_xfmr)
 	XlateFuncBind("Subscribe_pfm_components_xfmr", Subscribe_pfm_components_xfmr)
 	XlateFuncBind("YangToDb_pfm_components_xfmr", YangToDb_pfm_components_xfmr)
+	XlateFuncBind("YangToDb_pfm_components_ic_csig_xfmr", YangToDb_pfm_components_ic_csig_xfmr)
+	XlateFuncBind("DbToYang_pfm_components_ic_csig_xfmr", DbToYang_pfm_components_ic_csig_xfmr)
 }
 
 func getPfmRootObject(s *ygot.GoStruct) *ocbinds.OpenconfigPlatform_Components {
@@ -841,6 +947,113 @@ func getPfmRootObject(s *ygot.GoStruct) *ocbinds.OpenconfigPlatform_Components {
 	}
 	deviceObj := (*s).(*ocbinds.Device)
 	return deviceObj.Components
+}
+
+var YangToDb_pfm_components_ic_csig_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (map[string]map[string]db.Value, error) {
+	log.V(lvl.DEBUG).Infof("YangToDb_pfm_components_ic_csig_xfmr (requestUri=%v)", inParams.requestUri)
+
+	node := NewPathInfo(inParams.uri).Var("name")
+	if len(node) == 0 {
+		return nil, nil
+	}
+
+	pfmObj := getPfmRootObject(inParams.ygRoot)
+	if pfmObj == nil || pfmObj.Component == nil || len(pfmObj.Component) < 1 {
+		log.V(lvl.ERROR).Info("YangToDb_pfm_components_ic_csig_xfmr: Empty component.")
+		return nil, tlerr.NotSupported("YangToDb_pfm_components_ic_csig_xfmr: Empty component.")
+	}
+
+	comp, ok := pfmObj.Component[node]
+	if !ok || comp == nil {
+		return nil, fmt.Errorf("YangToDb_pfm_components_ic_csig_xfmr: Invalid component name: %s", node)
+	}
+
+	var csigSupportedStr string
+
+	if comp.IntegratedCircuit != nil && comp.IntegratedCircuit.PinsCsig != nil && comp.IntegratedCircuit.PinsCsig.Config != nil {
+		if csigSupportedStr, ok = yangToDbCsigSupportedMap[comp.IntegratedCircuit.PinsCsig.Config.CsigSupported]; !ok {
+			return nil, fmt.Errorf("YangToDb_pfm_components_ic_csig_xfmr, Error: Invalid csig-supported: %s", csigSupportedStr)
+		}
+	}
+
+	resMap := map[string]map[string]db.Value{
+		"HST_CONFIG": {
+			"GLOBAL": {
+				Field: map[string]string{
+					"CSIG_SUPPORTED": csigSupportedStr,
+				},
+			},
+		},
+	}
+	return resMap, nil
+}
+
+var DbToYang_pfm_components_ic_csig_xfmr SubTreeXfmrDbToYang = func(inParams XfmrParams) error {
+	pathInfo := NewPathInfo(inParams.uri)
+	log.V(lvl.DEBUG).Infof("DbToYang_pfm_components_ic_csig_xfmr Template: %s ,path: %s, vars: %v", pathInfo.Template, pathInfo.Path, pathInfo.Vars)
+
+	targetUriPath, err := getYangPathFromUri(pathInfo.Path)
+	if err != nil {
+		return err
+	}
+
+	if !strings.HasPrefix(targetUriPath, "/openconfig-platform:components/component/integrated-circuit/google-pins-platform:pins-csig") {
+		return errors.New("Component not supported")
+	}
+
+	node := NewPathInfo(inParams.uri).Var("name")
+	if !validICName(&node) {
+		return errors.New("Invalid component name: " + node)
+	}
+
+	pfmComps := getPfmRootObject(inParams.ygRoot)
+	nodeCom, ok := pfmComps.Component[node]
+	if !ok || nodeCom == nil {
+		return errors.New("Component not present: " + node)
+	}
+	ygot.BuildEmptyTree(nodeCom)
+	ygot.BuildEmptyTree(nodeCom.IntegratedCircuit)
+	ygot.BuildEmptyTree(nodeCom.IntegratedCircuit.PinsCsig)
+	ygot.BuildEmptyTree(nodeCom.IntegratedCircuit.PinsCsig.Config)
+	ygot.BuildEmptyTree(nodeCom.IntegratedCircuit.PinsCsig.State)
+
+	tblName := "HST_CONFIG"
+	keyName := "GLOBAL"
+
+	var errs []error
+
+	// Config
+	csigInfo, err := getCsigInfoFromDb(keyName, inParams.dbs[db.ConfigDB], tblName)
+	if err == nil {
+		csigSupportedEnum, ok := dbToYangCsigSupportedMap[csigInfo.csigSupported]
+		if !ok {
+			return fmt.Errorf("CSIG_SUPPORTED field '%s' read from Config DB not found in dbToYangCsigSupportedMap.", csigInfo.csigSupported)
+		}
+		csigCfg := nodeCom.IntegratedCircuit.PinsCsig.Config
+		csigCfg.CsigSupported = csigSupportedEnum
+	} else {
+		log.V(lvl.ERROR).Info("Cannot get entry: ", keyName, " in Config DB; Error: ", err)
+		errs = append(errs, err)
+	}
+
+	// State
+	csigInfo, err = getCsigInfoFromDb(keyName, inParams.dbs[db.StateDB], tblName)
+	if err == nil {
+		csigSupportedEnum, ok := dbToYangCsigSupportedMap[csigInfo.csigSupported]
+		if !ok {
+			return fmt.Errorf("CSIG_SUPPORTED field '%s' read from State DB not found in dbToYangCsigSupportedMap.", csigInfo.csigSupported)
+		}
+		csigSt := nodeCom.IntegratedCircuit.PinsCsig.State
+		csigSt.CsigSupported = csigSupportedEnum
+	} else {
+		log.V(lvl.ERROR).Info("Cannot get entry: ", keyName, " in State DB; Error: ", err)
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
 }
 
 func fillAllPowerSupplyRailInfo(rails *ocbinds.OpenconfigPlatform_Components_Component_PowerSupply_Rails, d *db.DB, psName string, targetUriPath string) error {
@@ -1885,7 +2098,7 @@ func getSysComponents(pf_cpts *ocbinds.OpenconfigPlatform_Components, targetUriP
 			ygot.BuildEmptyTree(pf_comp.State)
 			ygot.BuildEmptyTree(pf_comp.State.Temperature)
 		}
-		if compType == CompTypePcie {
+		if compType == CompTypePcie || compType == CompTypeEepromStatus {
 			ygot.BuildEmptyTree(pf_comp.State)
 			ygot.BuildEmptyTree(pf_comp.State.Pcie)
 		}
@@ -2071,6 +2284,23 @@ func getSysComponents(pf_cpts *ocbinds.OpenconfigPlatform_Components, targetUriP
 			default:
 				fillPowerSupplyInfo(pf_comp, compName, railKey, SingularPath, targetUriPath, d)
 			}
+		case CompTypeControllerCard:
+			return fillControllerCardInfo(pf_comp, compName, SingularPath, targetUriPath, d)
+		case CompTypeDiskCarrier:
+			return fillDiskCarrierInfo(pf_comp, compName, SingularPath, targetUriPath, d)
+		case CompTypeHumidity:
+			ygot.BuildEmptyTree(pf_comp.Sensor)
+			ygot.BuildEmptyTree(pf_comp.Sensor.State)
+			switch targetUriPath {
+			case COMP_SENSOR:
+				fallthrough
+			case COMP_SENSOR_ST:
+				return fillSysHumidityInfo(pf_comp, compName, AllCompPaths, targetUriPath, d)
+			default:
+				return fillSysHumidityInfo(pf_comp, compName, SingularPath, targetUriPath, d)
+			}
+		case CompTypeEepromStatus:
+			return fillEepromStatusInfo(pf_comp, compName, SingularPath, targetUriPath, d)
 		default:
 			return fmt.Errorf("Unhandled Component: %s", compName)
 		}
@@ -2170,8 +2400,11 @@ func getSysPsuFromDb(name string, d *db.DB) (PSU, error) {
 		psuInfo.Status = true
 	}
 
+	psuInfo.Parent = entityParent(name, psuEntry.Get("parent"), d)
+	psuInfo.Location = entityLocation(name, psuEntry.Get("location"), d)
 	psuInfo.Model_Name = convertUTF8EndcodedString(psuEntry.Get("model"))
 	psuInfo.Manufacturer = convertUTF8EndcodedString(psuEntry.Get("mfr_id"))
+	psuInfo.Part_Number = convertUTF8EndcodedString(psuEntry.Get("part-no"))
 	psuInfo.Serial_Number = convertUTF8EndcodedString(psuEntry.Get("serial"))
 	return psuInfo, err
 }
@@ -2200,7 +2433,13 @@ func fillSysPsuInfo(psuCom *ocbinds.OpenconfigPlatform_Components_Component,
 		}
 		psuEepromState.Empty = &empty
 		psuEepromState.Name = &name
+
 		psuEepromState.Parent = &defaultParentVal
+		if psuInfo.Parent != "" && psuInfo.Parent != "N/A" {
+			psuEepromState.Parent = &psuInfo.Parent
+		}
+		psuEepromState.Location = StringWithDefault(&psuInfo.Location, "")
+
 		psuEepromState.Type, _ = psuEepromState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
 			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_POWER_SUPPLY)
 		psuEepromState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_DISABLED
@@ -2213,6 +2452,7 @@ func fillSysPsuInfo(psuCom *ocbinds.OpenconfigPlatform_Components_Component,
 		}
 
 		if psuInfo.Model_Name != "" {
+			psuEepromState.ModelName = &psuInfo.Model_Name
 			psuEepromState.Description = &psuInfo.Model_Name
 			psuEepromState.PartNo = &psuInfo.Model_Name
 		}
@@ -2221,6 +2461,9 @@ func fillSysPsuInfo(psuCom *ocbinds.OpenconfigPlatform_Components_Component,
 		}
 		if psuInfo.Serial_Number != "" {
 			psuEepromState.SerialNo = &psuInfo.Serial_Number
+		}
+		if psuInfo.Part_Number != "" {
+			psuEepromState.PartNo = &psuInfo.Part_Number
 		}
 
 		return err
@@ -2242,6 +2485,10 @@ func fillSysPsuInfo(psuCom *ocbinds.OpenconfigPlatform_Components_Component,
 		if psuInfo.Model_Name != "" {
 			psuEepromState.Description = &psuInfo.Model_Name
 		}
+	case COMP_STATE_MODEL_NAME:
+		if psuInfo.Model_Name != "" {
+			psuEepromState.ModelName = &psuInfo.Model_Name
+		}
 	case COMP_STATE_MFG_NAME:
 		if psuInfo.Manufacturer != "" {
 			psuEepromState.MfgName = &psuInfo.Manufacturer
@@ -2250,10 +2497,18 @@ func fillSysPsuInfo(psuCom *ocbinds.OpenconfigPlatform_Components_Component,
 		if psuInfo.Model_Name != "" {
 			psuEepromState.PartNo = &psuInfo.Model_Name
 		}
+		if psuInfo.Part_Number != "" {
+			psuEepromState.PartNo = &psuInfo.Part_Number
+		}
 	case COMP_STATE_NAME:
 		psuEepromState.Name = &name
 	case COMP_STATE_PARENT:
 		psuEepromState.Parent = &defaultParentVal
+		if psuInfo.Parent != "" && psuInfo.Parent != "N/A" {
+			psuEepromState.Parent = &psuInfo.Parent
+		}
+	case COMP_STATE_LOCATION:
+		psuEepromState.Location = StringWithDefault(&psuInfo.Location, "")
 	case COMP_STATE_TYPE:
 		psuEepromState.Type, _ = psuEepromState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
 			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_POWER_SUPPLY)
@@ -2284,18 +2539,42 @@ func validFanTrayName(name string) bool {
 	if name == "" {
 		return false
 	}
-	if validFanTray, err := regexp.MatchString("FanTray[1-9][0-9]*$", name); err == nil {
-		return validFanTray
+	if strings.HasPrefix(name, FAN_TRAY_PREFIX) {
+		return true
+	} else if strings.HasSuffix(name, FAN_TRAY_SUFFIX) {
+		return true
+	} else {
+		return false
 	}
-	return false
 }
 
 func validFpgaName(name *string) bool {
 	if name == nil || *name == "" {
 		return false
 	}
-	validFpga, _ := regexp.MatchString("fpga_[0-9]*$", *name)
-	return validFpga
+	return strings.HasPrefix(*name, "fpga_")
+}
+
+func entityParent(name, default_parent string, d *db.DB) string {
+	entityEntry, err := d.GetEntry(&db.TableSpec{Name: PHYS_ENTITY_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		return default_parent
+	}
+	if parent := entityEntry.Get("parent_name"); parent != "" {
+		return parent
+	}
+	return default_parent
+}
+
+func entityLocation(name, default_location string, d *db.DB) string {
+	entityEntry, err := d.GetEntry(&db.TableSpec{Name: PHYS_ENTITY_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		return default_location
+	}
+	if location := entityEntry.Get("position_in_parent"); location != "" {
+		return location
+	}
+	return default_location
 }
 
 func fanDbEntry(name string, d *db.DB) (fanInfo, error) {
@@ -2305,7 +2584,7 @@ func fanDbEntry(name string, d *db.DB) (fanInfo, error) {
 	tblName := FAN_TBL
 	if validFanTrayName(name) {
 		tblName = FAN_TRAY_TBL
-		index = strings.TrimPrefix(name, "FanTray")
+		index = strings.TrimSuffix(strings.TrimPrefix(name, FAN_TRAY_PREFIX), FAN_TRAY_SUFFIX)
 	}
 	dbEntry, err := d.GetEntry(&db.TableSpec{Name: tblName}, db.Key{Comp: []string{name}})
 	if err != nil {
@@ -2320,7 +2599,7 @@ func fanDbEntry(name string, d *db.DB) (fanInfo, error) {
 	}
 	fanInfo.location = index
 	fanInfo.mfgDate = dbEntry.Get("mfg_date")
-	fanInfo.parent = dbEntry.Get("drawer_name")
+	fanInfo.parent = entityParent(name, dbEntry.Get("drawer_name"), d)
 	fanInfo.partNo = dbEntry.Get("part_no")
 	fanInfo.model = dbEntry.Get("model")
 	fanInfo.presence = false
@@ -2456,10 +2735,14 @@ func dbToYangFan(comp *ocbinds.OpenconfigPlatform_Components_Component,
 				ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_FAN)
 		} else if cType == CompTypeFanTray {
 			comp.State.Type, _ = comp.State.To_OpenconfigPlatform_Components_Component_State_Type_Union(
-				ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_FANTRAY)
+				ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_FAN_TRAY)
 		}
 	}
-
+	if allState || targetUriPath == COMP_STATE_MODEL_NAME {
+		if fanInfo.model != "" {
+			comp.State.ModelName = &fanInfo.model
+		}
+	}
 	if allFan || targetUriPath == COMP_FAN_SPEED {
 		if fanInfo.speed != "" {
 			speedU64, err := strconv.ParseUint(fanInfo.speed, 10, 32)
@@ -3007,6 +3290,13 @@ func validCpuName(name string) bool {
 	return false
 }
 
+func validHumidityName(name string) bool {
+	if name == "" {
+		return false
+	}
+	return strings.HasPrefix(name, "humidity_")
+}
+
 func getSysTempFromDb(name string, d *db.DB) (TempSensor, error) {
 	tempEntry, err := d.GetEntry(&db.TableSpec{Name: TEMP_TBL}, db.Key{Comp: []string{name}})
 	if err != nil {
@@ -3141,6 +3431,69 @@ func fillSysTempInfo(temp *ocbinds.OpenconfigPlatform_Components_Component,
 	return nil
 }
 
+func getSysHumidityFromDb(name string, d *db.DB) (HumiditySensor, error) {
+	sensorEntry, err := d.GetEntry(&db.TableSpec{Name: HUMIDITY_SENSOR_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Cant get entry: ", name, "; Error: ", err)
+		return HumiditySensor{}, err
+	}
+
+	return HumiditySensor{
+		Name:             sensorEntry.Get("channel-name"),
+		Parent:           sensorEntry.Get("parent"),
+		RelativeHumidity: sensorEntry.Get("relative-humidity"),
+	}, nil
+}
+
+func fillSysHumidityInfo(humidity *ocbinds.OpenconfigPlatform_Components_Component,
+	name string, pType PathType, targetUriPath string, d *db.DB) error {
+	humidityInfo, err := getSysHumidityFromDb(name, d)
+	if err != nil {
+		return err
+	}
+
+	humidityState := humidity.State
+	humiditySensorState := humidity.Sensor.State
+	defaultParentVal := CHASSIS_PREFIX
+
+	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths || targetUriPath == COMP_SENSOR {
+		humidityState.Name = StringWithDefault(&humidityInfo.Name, name)
+		humidity.Config.Name = humidityState.Name
+		humidityState.Parent = StringWithDefault(&humidityInfo.Parent, defaultParentVal)
+		humidityState.Type, _ = humidityState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_SENSOR)
+
+		if pType == StatePaths {
+			return nil
+		}
+
+		// Sensor State
+		humiditySensorState.SensorType = ocbinds.GooglePinsPlatform_SENSOR_TYPE_HUMIDITY_SENSOR
+		humiditySensorState.Instant = String2Float(humidityInfo.RelativeHumidity, 0)
+		return nil
+	}
+
+	switch targetUriPath {
+	case COMP_CONFIG_NAME:
+		humidity.Config.Name = StringWithDefault(&humidityInfo.Name, name)
+	case COMP_STATE_NAME:
+		humidityState.Name = StringWithDefault(&humidityInfo.Name, name)
+	case COMP_STATE_PARENT:
+		humidityState.Parent = StringWithDefault(&humidityInfo.Parent, defaultParentVal)
+	case COMP_STATE_TYPE:
+		humidityState.Type, _ = humidityState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_SENSOR)
+	case SENSOR_STATE_SENSOR_TYPE:
+		humiditySensorState.SensorType = ocbinds.GooglePinsPlatform_SENSOR_TYPE_HUMIDITY_SENSOR
+	case SENSOR_STATE_INSTANT:
+		humiditySensorState.Instant = String2Float(humidityInfo.RelativeHumidity, 0)
+	default:
+		return fmt.Errorf("unsupported leaf path for Sensor/CPU component: %v", targetUriPath)
+	}
+
+	return nil
+}
+
 func getSysStorageFromDb(name string, d *db.DB, tblName string) (Storage, error) {
 	/* Backend is populating STORAGE_INFO in: sonic-platform-daemons/sonic-componentd/scripts/componentd */
 	storageEntry, err := d.GetEntry(&db.TableSpec{Name: tblName}, db.Key{Comp: []string{name}})
@@ -3152,16 +3505,16 @@ func getSysStorageFromDb(name string, d *db.DB, tblName string) (Storage, error)
 		Name:                           storageEntry.Get("name"),
 		IOErrors:                       storageEntry.Get("io-errors"),
 		PartNo:                         storageEntry.Get("part-no"),
+		Parent:                         storageEntry.Get("parent"),
 		SerialNo:                       storageEntry.Get("serial-no"),
 		Removable:                      storageEntry.Get("removable"),
+		OperStatus:                     storageEntry.Get("oper-status"),
 		WriteAmplificationFactor:       storageEntry.Get("write-amplification-factor"),
 		RawReadErrorRate:               storageEntry.Get("raw-read-error-rate"),
 		ThroughputPerformance:          storageEntry.Get("throughput-performance"),
 		ReallocatedSectorCount:         storageEntry.Get("reallocated-sector-count"),
 		PowerOnSeconds:                 storageEntry.Get("power-on-time"),
 		SsdLifeLeft:                    storageEntry.Get("ssd-life-left"),
-		AvgEraseCount:                  storageEntry.Get("slc-avg-erase-count"), // TODO(b/378949385): Remove redundant leaf.
-		MaxEraseCount:                  storageEntry.Get("slc-max-erase-count"), // TODO(b/378949385): Remove redundant leaf.
 		PowerCycleCount:                storageEntry.Get("power-cycle-count"),
 		UncorrectableSectorCountOnLine: storageEntry.Get("uncorrectable-sector-count"),
 		NumPureSpare:                   storageEntry.Get("num-pure-spare"),
@@ -3253,37 +3606,6 @@ func icDbEntry(name string, d *db.DB, tblName string) IC {
 	return nodeInfo
 }
 
-// Copied from xfmr_intf.go for now, can be removed once that is migrated.
-type fieldU64LeafPair struct {
-	field string
-	leaf  **uint64
-}
-
-func readAndParseCounters(entry *db.Value, fls []fieldU64LeafPair) error {
-	for _, fl := range fls {
-		if e := readAndParseCounter(entry, fl.field, fl.leaf); e != nil {
-			switch e.(type) {
-			case tlerr.NotFoundError:
-				continue
-			}
-			return e
-		}
-	}
-	return nil
-}
-func readAndParseCounter(entry *db.Value, attr string, counter_val **uint64) error {
-	val1, ok := entry.Field[attr]
-	if !ok {
-		return tlerr.NotFound("Attr " + attr + " missing")
-	}
-	v, err := strconv.ParseUint(val1, 10, 64)
-	if err != nil {
-		return err
-	}
-	*counter_val = &v
-	return nil
-}
-
 func populateBlackholeCounters(d *db.DB, ygRoot *ygot.GoStruct, bh *ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_State_Blackhole) error {
 	entry, err := d.GetEntry(
 		&db.TableSpec{Name: "COUNTERS_BLACKHOLE"},
@@ -3313,6 +3635,25 @@ func populateBlackholeCounters(d *db.DB, ygRoot *ygot.GoStruct, bh *ocbinds.Open
 		return err
 	}
 
+	return nil
+}
+
+func populateBadIntervalCounters(d *db.DB, icState *ocbinds.OpenconfigPlatform_Components_Component_IntegratedCircuit_State) error {
+	entry, err := d.GetEntry(
+		&db.TableSpec{Name: "COUNTERS_PORT_BAD_INTERVALS_PARAM"},
+		db.Key{Comp: []string{"GLOBAL"}})
+	if err != nil {
+		if !tlerr.IsTranslibRedisClientEntryNotExist(err) {
+			return err
+		}
+	}
+	if e := readAndParseCounter(&entry, "INTERVAL_MSEC", &icState.BadIntervalsDuration); e != nil {
+		switch e.(type) {
+		case tlerr.NotFoundError:
+		default:
+			return e
+		}
+	}
 	return nil
 }
 
@@ -3356,7 +3697,7 @@ func dbToYangIC(comp *ocbinds.OpenconfigPlatform_Components_Component,
 	 *   ...component/integrated-circuit/memory
 	 * Decide now which subtrees to fill based on the request. */
 	var all, allIc, compSt, compCfg, icCfg, icSt, icPlc, icMem bool
-	var icStBh, icStCg bool
+	var icStBh, icStCg, icStBi bool
 	if targetUriPath == COMP {
 		all = true
 	} else if strings.HasPrefix(targetUriPath, COMP_CFG) {
@@ -3371,6 +3712,8 @@ func dbToYangIC(comp *ocbinds.OpenconfigPlatform_Components_Component,
 			icStBh = true
 		} else if strings.HasPrefix(targetUriPath, COMP_IC_ST_CG) {
 			icStCg = true
+		} else if strings.HasPrefix(targetUriPath, COMP_IC_ST_BI) {
+			icStBi = true
 		}
 	} else if strings.HasPrefix(targetUriPath, COMP_IC_PLC) {
 		icPlc = true
@@ -3480,7 +3823,7 @@ func dbToYangIC(comp *ocbinds.OpenconfigPlatform_Components_Component,
 
 	/* Handle component integrated-circuit state paths */
 	if all || allIc || icSt {
-		allState := all || allIc || (!icStBh && !icStCg)
+		allState := all || allIc || (!icStBh && !icStCg && !icStBi)
 		if allState || icStBh {
 			if err = populateBlackholeCounters(ctrsDb, ygRoot, comp.IntegratedCircuit.State.Blackhole); err != nil {
 				log.V(lvl.WARNING).Infof("Error populating BH counters, uri=%s, name=%s, err=%v", targetUriPath, name, err)
@@ -3489,6 +3832,12 @@ func dbToYangIC(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		}
 		if allState || icStCg {
 			if err = populateCongestionCounters(ctrsDb, ygRoot, comp.IntegratedCircuit.State.Congestion); err != nil {
+				log.V(lvl.WARNING).Infof("Error populating CG counters, uri=%s, name=%s, err=%v", targetUriPath, name, err)
+				return err
+			}
+		}
+		if allState || icStBi {
+			if err = populateBadIntervalCounters(ctrsDb, comp.IntegratedCircuit.State); err != nil {
 				log.V(lvl.WARNING).Infof("Error populating CG counters, uri=%s, name=%s, err=%v", targetUriPath, name, err)
 				return err
 			}
@@ -3533,7 +3882,6 @@ func StringWithDefault(val *string, dval string) *string {
 func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 	name string, pType PathType, targetUriPath string, stdb *db.DB) error {
 	statePresent := true
-	storageParent := CHASSIS_PREFIX
 	storageInfo, err := getSysStorageFromDb(name, stdb, STORAGE_INFO)
 	if err != nil {
 		log.V(lvl.DEBUG).Info("Error Getting Storage info from State DB: ", err.Error())
@@ -3561,8 +3909,17 @@ func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		compState.Name = StringWithDefault(&storageInfo.Name, name)
 		compState.PartNo = StringWithDefault(&storageInfo.PartNo, "Missing in State DB")
 		compState.SerialNo = StringWithDefault(&storageInfo.SerialNo, "Missing in State DB")
+		compState.Parent = StringWithDefault(&storageInfo.Parent, "Missing in State DB")
 		compState.Removable = String2Bool(&storageInfo.Removable, false)
-		compState.Parent = &storageParent
+		switch storageInfo.OperStatus {
+		case "ACTIVE":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE
+		case "INACTIVE":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE
+		case "DISABLED":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_DISABLED
+		}
+		compState.Parent = StringWithDefault(&storageInfo.Parent, "Missing in State DB")
 		compTemp.Instant = String2Float(storageInfo.Temperature, 0.0)
 		if storageInfo.IOErrors != "" {
 			ioErrors, err := strconv.ParseUint(storageInfo.IOErrors, 10, 64)
@@ -3579,8 +3936,6 @@ func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		storageState.PowerOnSeconds = String2Uint(storageInfo.PowerOnSeconds, 0)
 		// Note: For new disk, SSD Lift Left should be 100
 		storageState.SsdLifeLeft = String2Uint(storageInfo.SsdLifeLeft, 100)
-		storageState.AvgEraseCount = String2Uint32(storageInfo.AvgEraseCount, 0)
-		storageState.MaxEraseCount = String2Uint32(storageInfo.MaxEraseCount, 0)
 		storageState.PowerCycleCount = String2Uint32(storageInfo.PowerCycleCount, 0)
 		storageState.UncorrectableSectorCountOnLine = String2Uint32(storageInfo.UncorrectableSectorCountOnLine, 0)
 		storageState.NumPureSpare = String2Uint32(storageInfo.NumPureSpare, 0)
@@ -3622,7 +3977,16 @@ func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		compState.Type, _ = compState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
 			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_STORAGE)
 	case COMP_STATE_PARENT:
-		compState.Parent = &storageParent
+		compState.Parent = StringWithDefault(&storageInfo.Parent, "Missing in State DB")
+	case COMP_STATE_OPER_STATUS:
+		switch storageInfo.OperStatus {
+		case "ACTIVE":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE
+		case "INACTIVE":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_INACTIVE
+		case "DISABLED":
+			compState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_DISABLED
+		}
 	case COMP_STATE_REMOVABLE:
 		compState.Removable = String2Bool(&storageInfo.Removable, false)
 	case COMP_STATE_TEMP_CTR, COMP_STATE_TEMP:
@@ -3648,10 +4012,6 @@ func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		storageState.PowerOnSeconds = String2Uint(storageInfo.PowerOnSeconds, 0)
 	case G_STORAGE_SLL:
 		storageState.SsdLifeLeft = String2Uint(storageInfo.SsdLifeLeft, 100)
-	case G_STORAGE_AEC:
-		storageState.AvgEraseCount = String2Uint32(storageInfo.AvgEraseCount, 0)
-	case G_STORAGE_MEC:
-		storageState.MaxEraseCount = String2Uint32(storageInfo.MaxEraseCount, 0)
 	case G_STORAGE_PCC:
 		storageState.PowerCycleCount = String2Uint32(storageInfo.PowerCycleCount, 0)
 	case G_STORAGE_USCOL:
@@ -3698,6 +4058,66 @@ func fillSysStorageInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
 		storageState.ReadSectorCount = String2Uint32(storageInfo.ReadSectorCount, 0)
 	case G_STORAGE_FWC:
 		storageState.FlashWriteCount = String2Uint32(storageInfo.FlashWriteCount, 0)
+	}
+	return nil
+}
+
+func getDiskCarrierInfoFromDb(name string, d *db.DB) (DiskCarrier, error) {
+	diskCarrierEntry, err := d.GetEntry(&db.TableSpec{Name: DISK_CARRIER_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Cant get entry: ", name, "; Error: ", err)
+		return DiskCarrier{}, err
+	}
+	return DiskCarrier{
+		Model_Name:    diskCarrierEntry.Get("model"),
+		Name:          diskCarrierEntry.Get("name"),
+		Parent:        diskCarrierEntry.Get("parent"),
+		Part_Number:   diskCarrierEntry.Get("part-no"),
+		Serial_Number: diskCarrierEntry.Get("serial"),
+	}, nil
+}
+
+/* Filling in the state info for disk carrier components available in Redis DB */
+func fillDiskCarrierInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
+	name string, pType PathType, targetUriPath string, stdb *db.DB) error {
+	diskCarrierInfo, err := getDiskCarrierInfoFromDb(name, stdb)
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Error Getting disk carrier info from State DB: ", err.Error())
+		return err
+	}
+	carrierEepromState := comp.State
+	defaultVal := ""
+	defaultParentVal := CHASSIS_PREFIX
+
+	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths {
+		// Filling in state values
+		carrierEepromState.Name = StringWithDefault(&diskCarrierInfo.Name, name)
+		carrierEepromState.Description = StringWithDefault(&diskCarrierInfo.Model_Name, defaultVal)
+		carrierEepromState.ModelName = StringWithDefault(&diskCarrierInfo.Model_Name, defaultVal)
+		carrierEepromState.Parent = StringWithDefault(&diskCarrierInfo.Parent, defaultParentVal)
+		carrierEepromState.PartNo = StringWithDefault(&diskCarrierInfo.Part_Number, diskCarrierInfo.Model_Name)
+		carrierEepromState.SerialNo = StringWithDefault(&diskCarrierInfo.Serial_Number, defaultVal)
+		carrierEepromState.Type, _ = carrierEepromState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_STORAGE)
+		return nil
+	}
+
+	switch targetUriPath {
+	case COMP_STATE_NAME:
+		carrierEepromState.Name = StringWithDefault(&diskCarrierInfo.Name, name)
+	case COMP_STATE_DESCR:
+		carrierEepromState.Description = StringWithDefault(&diskCarrierInfo.Model_Name, defaultVal)
+	case COMP_STATE_MODEL_NAME:
+		carrierEepromState.ModelName = StringWithDefault(&diskCarrierInfo.Model_Name, defaultVal)
+	case COMP_STATE_PARENT:
+		carrierEepromState.Parent = StringWithDefault(&diskCarrierInfo.Parent, defaultParentVal)
+	case COMP_STATE_TYPE:
+		carrierEepromState.Type, _ = carrierEepromState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_STORAGE)
+	case COMP_STATE_PART_NO:
+		carrierEepromState.PartNo = StringWithDefault(&diskCarrierInfo.Part_Number, diskCarrierInfo.Model_Name)
+	case COMP_STATE_SERIAL_NO:
+		carrierEepromState.SerialNo = StringWithDefault(&diskCarrierInfo.Serial_Number, defaultVal)
 	}
 	return nil
 }
@@ -3792,10 +4212,11 @@ func getSysDpbFromDb(name string, d *db.DB, tblName string) (Port, error) {
 	}
 
 	portInfo := Port{
-		Name:         portEntry.Get("name"),
-		Parent:       portEntry.Get("parent"),
-		PortID:       portEntry.Get("port-id"),
-		BreakoutMode: portEntry.Get("brkout_mode"),
+		Name:            portEntry.Get("name"),
+		Parent:          portEntry.Get("parent"),
+		PortID:          portEntry.Get("port-id"),
+		BreakoutMode:    portEntry.Get("brkout_mode"),
+		FirmwareVersion: portEntry.Get("serdes-firmware-version"),
 	}
 	return portInfo, nil
 }
@@ -3877,6 +4298,10 @@ func fillDpbData(comp *ocbinds.OpenconfigPlatform_Components_Component, name, su
 		if portInfo.Parent != "" {
 			compState.Parent = &portInfo.Parent
 		}
+		// State Firmware Version
+		if portInfo.FirmwareVersion != "" {
+			compState.FirmwareVersion = &portInfo.FirmwareVersion
+		}
 		// Config Name
 		comp.Config.Name = &name
 		return nil
@@ -3892,6 +4317,10 @@ func fillDpbData(comp *ocbinds.OpenconfigPlatform_Components_Component, name, su
 		compState.Parent = &defaultParentVal
 		if portInfo.Parent != "" {
 			compState.Parent = &portInfo.Parent
+		}
+	case COMP_STATE_FIRM_VER:
+		if portInfo.FirmwareVersion != "" {
+			compState.FirmwareVersion = &portInfo.FirmwareVersion
 		}
 	case COMP_STATE_TYPE:
 		compState.Type, _ = compState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
@@ -4684,7 +5113,7 @@ func fillSysPcieInfo(pcieComp *ocbinds.OpenconfigPlatform_Components_Component,
 	// Updating the tree directly to avoid string case matches for each individual pcie path.
 	// PCIE Fatal errors
 	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths ||
-		targetUriPath == "/openconfig-platform:components/component/state/pcie" ||
+		targetUriPath == COMP_STATE_PCIE ||
 		strings.Contains(targetUriPath, "fatal-errors") {
 		ygot.BuildEmptyTree(pcieComp.State.Pcie.FatalErrors)
 		pcieComp.State.Pcie.FatalErrors.TotalErrors = String2Uint(pcieInfo.Get("fatal|TOTAL_ERR_FATAL"), 0)
@@ -4709,7 +5138,7 @@ func fillSysPcieInfo(pcieComp *ocbinds.OpenconfigPlatform_Components_Component,
 
 	// PCIE Non-fatal errors
 	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths ||
-		targetUriPath == "/openconfig-platform:components/component/state/pcie" ||
+		targetUriPath == COMP_STATE_PCIE ||
 		strings.Contains(targetUriPath, "non-fatal-errors") {
 		ygot.BuildEmptyTree(pcieComp.State.Pcie.NonFatalErrors)
 		pcieComp.State.Pcie.NonFatalErrors.TotalErrors = String2Uint(pcieInfo.Get("non_fatal|TOTAL_ERR_NONFATAL"), 0)
@@ -4734,7 +5163,7 @@ func fillSysPcieInfo(pcieComp *ocbinds.OpenconfigPlatform_Components_Component,
 
 	// PCIE Correctable errors
 	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths ||
-		targetUriPath == "/openconfig-platform:components/component/state/pcie" ||
+		targetUriPath == COMP_STATE_PCIE ||
 		strings.Contains(targetUriPath, "correctable-errors") {
 		ygot.BuildEmptyTree(pcieComp.State.Pcie.CorrectableErrors)
 		pcieComp.State.Pcie.CorrectableErrors.TotalErrors = String2Uint(pcieInfo.Get("correctable|TOTAL_ERR_COR"), 0)
@@ -4748,6 +5177,160 @@ func fillSysPcieInfo(pcieComp *ocbinds.OpenconfigPlatform_Components_Component,
 		pcieComp.State.Pcie.CorrectableErrors.HdrLogOverflowErrors = String2Uint(pcieInfo.Get("correctable|HeaderOF"), 0)
 	}
 
+	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths ||
+		targetUriPath == COMP_STATE_PCIE ||
+		strings.Contains(targetUriPath, "pins-link-speed") ||
+		strings.Contains(targetUriPath, "pins-link-width") {
+		pcieComp.State.Pcie.PinsLinkSpeed = String2Float(pcieInfo.Get("link_speed"), 0)
+		pcieComp.State.Pcie.PinsLinkWidth = String2Uint32(pcieInfo.Get("link_width"), 0)
+	}
+
+	return nil
+}
+
+func getCsigInfoFromDb(key string, d *db.DB, tblName string) (CsigInfo, error) {
+	var csigInfo CsigInfo
+
+	entry, err := d.GetEntry(&db.TableSpec{Name: tblName}, db.Key{Comp: []string{key}})
+	if err != nil {
+		return csigInfo, err
+	}
+
+	csigInfo.csigSupported = entry.Get("CSIG_SUPPORTED")
+
+	return csigInfo, nil
+}
+
+func getControllerCardInfoFromDb(name string, d *db.DB) (ControllerCard, error) {
+	cardEntry, err := d.GetEntry(&db.TableSpec{Name: CONTROLLER_CARD_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Cant get entry: ", name, "; Error: ", err)
+		return ControllerCard{}, err
+	}
+
+	return ControllerCard{
+		Name:          cardEntry.Get("name"),
+		Model_Name:    cardEntry.Get("model"),
+		Parent:        cardEntry.Get("parent"),
+		Part_Number:   cardEntry.Get("part-no"),
+		Serial_Number: cardEntry.Get("serial"),
+	}, nil
+}
+
+/* Filling in the state info for controller card components available in Redis DB */
+func fillControllerCardInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
+	name string, pType PathType, targetUriPath string, stdb *db.DB) error {
+	cardInfo, err := getControllerCardInfoFromDb(name, stdb)
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Error Getting controller card info from State DB: ", err.Error())
+		return err
+	}
+	cardState := comp.State
+	defaultVal := ""
+	defaultParentVal := CHASSIS_PREFIX
+
+	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths {
+		// Filling in state values
+		cardState.Name = StringWithDefault(&cardInfo.Name, name)
+		cardState.Description = StringWithDefault(&cardInfo.Model_Name, defaultVal)
+		cardState.ModelName = StringWithDefault(&cardInfo.Model_Name, defaultVal)
+		cardState.Parent = StringWithDefault(&cardInfo.Parent, defaultParentVal)
+		cardState.PartNo = StringWithDefault(&cardInfo.Part_Number, cardInfo.Model_Name)
+		cardState.SerialNo = StringWithDefault(&cardInfo.Serial_Number, defaultVal)
+		cardState.Type, _ = cardState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_CONTROLLER_CARD)
+		// If this code is running, the controller card is functioning, so report ACTIVE
+		cardState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE
+		return nil
+	}
+
+	switch targetUriPath {
+	case COMP_STATE_NAME:
+		cardState.Name = StringWithDefault(&cardInfo.Name, name)
+	case COMP_STATE_DESCR:
+		cardState.Description = StringWithDefault(&cardInfo.Model_Name, defaultVal)
+	case COMP_STATE_MODEL_NAME:
+		cardState.ModelName = StringWithDefault(&cardInfo.Model_Name, defaultVal)
+	case COMP_STATE_PARENT:
+		cardState.Parent = StringWithDefault(&cardInfo.Parent, defaultParentVal)
+	case COMP_STATE_TYPE:
+		cardState.Type, _ = cardState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_CONTROLLER_CARD)
+	case COMP_STATE_OPER_STATUS:
+		// If this code is running, the controller card is functioning, so report ACTIVE
+		cardState.OperStatus = ocbinds.OpenconfigPlatformTypes_COMPONENT_OPER_STATUS_ACTIVE
+	case COMP_STATE_PART_NO:
+		cardState.PartNo = StringWithDefault(&cardInfo.Part_Number, cardInfo.Model_Name)
+	case COMP_STATE_SERIAL_NO:
+		cardState.SerialNo = StringWithDefault(&cardInfo.Serial_Number, defaultVal)
+	}
+	return nil
+}
+
+func getEepromStatusInfoFromDb(name string, d *db.DB) (EepromStatus, error) {
+	statusEntry, err := d.GetEntry(&db.TableSpec{Name: EEPROM_STATUS_TBL}, db.Key{Comp: []string{name}})
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Cant get entry: ", name, "; Error: ", err)
+		return EepromStatus{}, err
+	}
+
+	return EepromStatus{
+		Name:                 statusEntry.Get("name"),
+		Status:               statusEntry.Get("status"),
+		NumCorrectableErrors: statusEntry.Get("num-correctable-errors"),
+	}, nil
+}
+
+/* Filling in the state info for eeprom status components available in Redis DB */
+func fillEepromStatusInfo(comp *ocbinds.OpenconfigPlatform_Components_Component,
+	name string, pType PathType, targetUriPath string, stdb *db.DB) error {
+	statusInfo, err := getEepromStatusInfoFromDb(name, stdb)
+	if err != nil {
+		log.V(lvl.DEBUG).Info("Error Getting eeprom status info from State DB: ", err.Error())
+		return err
+	}
+	compState := comp.State
+	defaultParentVal := CHASSIS_PREFIX
+
+	if pType == AllPaths || pType == AllCompPaths || pType == StatePaths {
+		// Filling in state values
+		compState.Name = StringWithDefault(&statusInfo.Name, name)
+		compState.Parent = &defaultParentVal
+		compState.Type, _ = compState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_EEPROM)
+		var ok bool
+		if compState.OperStatus, ok = eepromOperStatusMap[statusInfo.Status]; !ok {
+			return fmt.Errorf("Failed to convert %s eeprom status (got \"%s\")", name, statusInfo.Status)
+		}
+		ygot.BuildEmptyTree(compState.Pcie)
+		ygot.BuildEmptyTree(compState.Pcie.CorrectableErrors)
+		compState.Pcie.CorrectableErrors.TotalErrors = String2Uint(statusInfo.NumCorrectableErrors, 0)
+		return nil
+	}
+
+	switch targetUriPath {
+	case COMP_STATE_NAME:
+		compState.Name = StringWithDefault(&statusInfo.Name, name)
+	case COMP_STATE_PARENT:
+		compState.Parent = &defaultParentVal
+	case COMP_STATE_TYPE:
+		compState.Type, _ = compState.To_OpenconfigPlatform_Components_Component_State_Type_Union(
+			ocbinds.OpenconfigPlatformTypes_OPENCONFIG_HARDWARE_COMPONENT_EEPROM)
+	case COMP_STATE_OPER_STATUS:
+		var ok bool
+		if compState.OperStatus, ok = eepromOperStatusMap[statusInfo.Status]; !ok {
+			return fmt.Errorf("Failed to convert %s eeprom status (got \"%s\")", name, statusInfo.Status)
+		}
+	case COMP_STATE_PCIE:
+		fallthrough
+	case COMP_STATE_PCIE_CORRECTABLE_ERRORS:
+		fallthrough
+	case COMP_STATE_PCIE_CORRECTABLE_ERRORS_TOTAL:
+		ygot.BuildEmptyTree(compState.Pcie)
+		ygot.BuildEmptyTree(compState.Pcie.CorrectableErrors)
+		fmt.Println("SallyLyu compState.Pcie.CorrectableErrors ", compState.Pcie.CorrectableErrors)
+		compState.Pcie.CorrectableErrors.TotalErrors = String2Uint(statusInfo.NumCorrectableErrors, 0)
+	}
 	return nil
 }
 

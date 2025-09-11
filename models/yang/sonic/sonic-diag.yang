@@ -80,6 +80,25 @@ module sonic-diag {
             }
         }
 
+        container BAD_INTERVALS_MONITORING {
+            list BAD_INTERVALS_MONITORING_LIST {
+                key name;
+                leaf name {
+                    type string {
+                        pattern "GLOBAL" {
+                            error-message "Only single GLOBAL bad interval monitoring instance supported";
+                        }
+                    }
+                }
+                leaf state {
+                    default "disabled";
+                    type string {
+                        pattern 'disabled|enabled';
+                    }
+                }
+            }
+        }
+
         container BLACKHOLE_SWITCH_PROFILE {
             list BLACKHOLE_SWITCH_PROFILE_LIST {
                 key name;
@@ -172,13 +191,14 @@ module sonic-diag {
         }
 
         container BLACKHOLE_PORT_TO_PROFILE_MAP {
+
             list BLACKHOLE_PORT_TO_PROFILE_MAP_LIST {
                 key "name";
 
                 leaf name {
                     type string {
                         pattern "GLOBAL" {
-                             error-message "Only single GLOBAL blackhole port to profile map supported";
+                            error-message "Only single GLOBAL blackhole port to profile map supported";
                         }
                     }
                 }

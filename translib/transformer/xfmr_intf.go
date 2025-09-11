@@ -119,6 +119,8 @@ func init() {
 	XlateFuncBind("DbToYang_intf_ecmp_hash_algorithm_xfmr", DbToYang_intf_ecmp_hash_algorithm_xfmr)
 	XlateFuncBind("YangToDb_intf_port_direction_xfmr", YangToDb_intf_port_direction_xfmr)
 	XlateFuncBind("DbToYang_intf_port_direction_xfmr", DbToYang_intf_port_direction_xfmr)
+	XlateFuncBind("YangToDb_intf_csig_tag_action_xfmr", YangToDb_intf_csig_tag_action_xfmr)
+	XlateFuncBind("DbToYang_intf_csig_tag_action_xfmr", DbToYang_intf_csig_tag_action_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_duplex_mode_xfmr", DbToYang_intf_eth_duplex_mode_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_mac_address_xfmr", DbToYang_intf_eth_mac_address_xfmr)
 	XlateFuncBind("DbToYang_intf_eth_negotiated_port_speed_xfmr", DbToYang_intf_eth_negotiated_port_speed_xfmr)
@@ -393,6 +395,8 @@ var yangToDbPortDirectionMap = map[ocbinds.E_OpenconfigInterfaces_Interfaces_Int
 	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_HOST_FACING:        "host_facing",
 	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_FACING:      "fabric_facing",
 	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_VENDOR_HOST_FACING: "vendor_host_facing",
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_DOWNLINK:    "fabric_downlink",
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_UPLINK:      "fabric_uplink",
 }
 
 var dbToYangPortDirectionMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection{
@@ -400,6 +404,18 @@ var dbToYangPortDirectionMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfa
 	"host_facing":        ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_HOST_FACING,
 	"fabric_facing":      ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_FACING,
 	"vendor_host_facing": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_VENDOR_HOST_FACING,
+	"fabric_downlink":    ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_DOWNLINK,
+	"fabric_uplink":      ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_PortDirection_FABRIC_UPLINK,
+}
+
+var yangToDbCsigTagActionMap = map[ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction]string{
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction_STRIP_TAG: "strip_tag",
+	ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction_KEEP_TAG:  "keep_tag",
+}
+
+var dbToYangCsigTagActionMap = map[string]ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction{
+	"strip_tag": ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction_STRIP_TAG,
+	"keep_tag":  ocbinds.OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction_KEEP_TAG,
 }
 
 type E_InterfaceType int64
@@ -1640,11 +1656,6 @@ func getCounters(entry *db.Value, entry_backup *db.Value, attr string, counter_v
 	return err
 }
 
-type fieldBinaryLeafPair struct {
-	field string
-	leaf  *ocbinds.Binary
-}
-
 var portCntList []string = []string{"in-octets", "in-unknown-protos", "in-unicast-pkts", "in-broadcast-pkts", "in-multicast-pkts",
 	"in-errors", "in-discards", "in-fcs-errors", "in-pkts", "out-octets", "out-unicast-pkts",
 	"out-broadcast-pkts", "out-multicast-pkts", "out-errors", "out-discards",
@@ -2146,10 +2157,6 @@ var DbToYangPath_intf_get_counters_path_xfmr PathXfmrDbToYangFunc = func(params 
 	return nil
 }*/
 
-var Subscribe_intf_get_ether_counters_xfmr SubTreeXfmrSubscribe = func(inParams XfmrSubscInParams) (XfmrSubscOutParams, error) {
-	return Subscribe_intf_get_counters_xfmr(inParams)
-}
-
 var populatePortCounters PopulateIntfCounters = func(inParams XfmrParams, ifName string, counter interface{}) error {
 	pathInfo := NewPathInfo(inParams.uri)
 	if ifName == "" {
@@ -2293,6 +2300,8 @@ var DbToYang_intf_get_ether_counters_xfmr SubTreeXfmrDbToYang = func(inParams Xf
 	ifName := pathInfo.Var("name")
 
 	targetUriPath, err := getYangPathFromUri(inParams.uri)
+	log.V(lvl.DEBUG).Infof("DbToYang_intf_get_ether_counters_xfmr - entering... ifName=%s targetUriPath=%s", ifName, targetUriPath)
+
 	intfType, _, ierr := getIntfTypeByName(ifName)
 	if intfType == IntfTypeUnset || ierr != nil {
 		log.V(lvl.DEBUG).Info("DbToYang_intf_get_ether_counters_xfmr - Invalid interface type IntfTypeUnset")
@@ -2332,135 +2341,164 @@ var DbToYang_intf_get_ether_counters_xfmr SubTreeXfmrDbToYang = func(inParams Xf
 	return populatePortCounters(inParams, "", eth_counters)
 }
 
+var Subscribe_intf_get_ether_counters_xfmr = func(inParams XfmrSubscInParams) (XfmrSubscOutParams, error) {
+	log.V(lvl.DEBUG).Info("Entering Subscribe_intf_get_ether_counters_xfmr")
+
+	result := XfmrSubscOutParams{
+		isVirtualTbl: false,
+		needCache:    true,
+		onChange:     OnchangeDisable,
+		dbDataMap:    make(RedisDbSubscribeMap),
+		nOpts:        &notificationOpts{mInterval: 1, pType: Sample}, // Counters can only support Sample.
+	}
+
+	ifName := NewPathInfo(inParams.uri).Var("name")
+	if ifName == "" {
+		ifName = "*"
+	}
+	result.dbDataMap = RedisDbSubscribeMap{db.ConfigDB: {"PORT": {ifName: {}}}}
+	log.V(lvl.DEBUG).Infof("Returning Subscribe_intf_get_ether_counters_xfmr, result.dbDataMap=%v", result.dbDataMap)
+
+	return result, nil
+}
+
 var intf_post_xfmr PostXfmrFunc = func(inParams XfmrParams) (map[string]map[string]db.Value, error) {
 
 	requestUriPath, _ := getYangPathFromUri(inParams.requestUri)
 	retDbDataMap := (*inParams.dbDataMap)[inParams.curDb]
 	log.V(lvl.DEBUG).Info("Entering intf_post_xfmr")
 
-	if inParams.oper == REPLACE && requestUriPath == "/openconfig-interfaces:interfaces" {
-		cfgDB := inParams.dbs[db.ConfigDB]
-		if _, ok := retDbDataMap["PORT"]; ok {
-			attrList := []string{"lanes", "alias", "index"}
-			for intf := range retDbDataMap["PORT"] {
-				appendExistingDBAttr(cfgDB, "PORT", intf, attrList, retDbDataMap)
-			}
-		}
-
-		intfsObj := getIntfsRoot(inParams.ygRoot)
-
-		// Delete PortChannels and Bridges removed from the config
-		subOpMap := make(map[db.DBNum]map[string]map[string]db.Value)
-		subOpMap[db.ConfigDB] = make(map[string]map[string]db.Value)
-
-		// PORTCHANNEL|* tables
-		deletePCs, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_TN, 1, pcs)
-		if err == nil && len(deletePCs) > 0 {
-			subOpMap[db.ConfigDB][PORTCHANNEL_TN] = deletePCs
-		}
-
-		// PORTCHANNEL_INTERFACE|* tables
-		deleteIntfs, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_INTERFACE_TN, 1, pcs)
-		if err == nil && len(deleteIntfs) > 0 {
-			subOpMap[db.ConfigDB][PORTCHANNEL_INTERFACE_TN] = deleteIntfs
-		}
-
-		// PORTCHANNEL_MEMBER|*|* tables
-		deleteMems, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_MEMBER_TN, 2, pcMembers)
-		if err == nil && len(deleteMems) > 0 {
-			subOpMap[db.ConfigDB][PORTCHANNEL_MEMBER_TN] = deleteMems
-		}
-
-		// UMF_TRUNK_QUEUE|<pc>|<qid> tables
-		deleteTrunkQueues, err := getTrunkQueueTablesForDeletion(cfgDB, pcs)
-		if err == nil && len(deleteMems) > 0 {
-			subOpMap[db.ConfigDB]["UMF_TRUNK_QUEUE"] = deleteTrunkQueues
-		}
-
-		// BRIDGE|* tables
-		bridgeTN := IntfTypeTblMap[IntfTypeBridge].cfgDb.portTN
-		bridgeKeys, err := cfgDB.GetKeys(&db.TableSpec{Name: bridgeTN})
-		if err == nil {
-			deleteBridges := map[string]db.Value{}
-			for _, key := range bridgeKeys {
-				br := key.Get(0)
-				if _, ok := intfsObj.Interface[br]; !ok {
-					deleteBridges[br] = db.Value{}
-				}
-			}
-			if len(deleteBridges) > 0 {
-				subOpMap[db.ConfigDB][bridgeTN] = deleteBridges
-			}
-		}
-
-		// BRIDGE_MEMBER|*|* tables
-		bridgeMemTN := IntfTypeTblMap[IntfTypeBridge].cfgDb.memberTN
-		bridgeMemKeys, err := cfgDB.GetKeys(&db.TableSpec{Name: bridgeMemTN})
-		if err == nil {
-			deleteBridgeMems := map[string]db.Value{}
-			for _, key := range bridgeMemKeys {
-				br := key.Get(0)
-				intf := key.Get(1)
-
-				if _, ok := intfsObj.Interface[br]; !ok {
-					deleteBridgeMems[br+"|"+intf] = db.Value{}
-					continue
-				}
-				if intfObj, ok := intfsObj.Interface[intf]; !ok || intfObj.Config == nil || intfObj.Config.BridgeId == nil || *(intfObj.Config.BridgeId) != br {
-					deleteBridgeMems[br+"|"+intf] = db.Value{}
-				}
-			}
-			if len(deleteBridgeMems) > 0 {
-				subOpMap[db.ConfigDB][bridgeMemTN] = deleteBridgeMems
-			}
-		}
-
-		if len(subOpMap[db.ConfigDB]) > 0 {
-			updateSubOpDataMap(subOpMap, DELETE, inParams)
-		}
-		log.V(lvl.DEBUG).Infof("PortChannel Cleanup:\nPCs: %v\nPCMembers: %v\nsubOpMap: %v", pcs, pcMembers, subOpMap)
-
-		additionalConfig := make(map[string]map[string]db.Value)
-		// Handle PortChannel members@ field.
-		if pcToMembers := pcToMembersMap(); len(pcToMembers) > 0 {
-			additionalConfig[PORTCHANNEL_TN] = map[string]db.Value{}
-			for pc, mems := range pcToMembers {
-				slices.Sort(mems)
-				additionalConfig[PORTCHANNEL_TN][pc] = db.Value{Field: map[string]string{"members@": strings.Join(mems, ",")}}
-			}
-		}
-
-		// Handle default interfaces config.
-		for _, intf := range intfsObj.Interface {
-			ifName := intf.Name
-			if ifName == nil {
-				continue
-			}
-			intfType, _, err := getIntfTypeByName(*ifName)
-			if err != nil || intfType != IntfTypeEthernet {
-				continue
-			}
-			intTbl, _ := IntfTypeTblMap[intfType]
-			if _, ok := additionalConfig[intTbl.cfgDb.portTN]; !ok {
-				additionalConfig[intTbl.cfgDb.portTN] = map[string]db.Value{}
-			}
-
-			data := db.Value{Field: map[string]string{}}
-			// Disable link damping for interfaces that do not have link damping config
-			if intf.PenaltyBasedAied == nil {
-				data.Set("link_event_damping_algorithm", "disabled")
-			}
-			// Set Default learn_mode for all front panel ports
-			data.Set("learn_mode", "disable")
-			additionalConfig[intTbl.cfgDb.portTN][*ifName] = data
-		}
-		if len(additionalConfig) > 0 {
-			updateSubOpDataMap(map[db.DBNum]map[string]map[string]db.Value{
-				db.ConfigDB: additionalConfig,
-			}, REPLACE, inParams)
-		}
-		log.V(lvl.DEBUG).Infof("Setting additional config for interfaces: %v", additionalConfig)
+	if inParams.oper != REPLACE || requestUriPath != "/openconfig-interfaces:interfaces" {
+		return retDbDataMap, nil
 	}
+
+	cfgDB := inParams.dbs[db.ConfigDB]
+	if _, ok := retDbDataMap["PORT"]; ok {
+		attrList := []string{"lanes", "alias", "index"}
+		for intf := range retDbDataMap["PORT"] {
+			appendExistingDBAttr(cfgDB, "PORT", intf, attrList, retDbDataMap)
+		}
+	}
+	if _, ok := retDbDataMap["MGMT_PORT"]; ok {
+		attrList := []string{"bond-downdelay", "bond-lacp-rate", "bond-miimon", "bond-mode", "bond-slaves", "bond-updelay"}
+		for intf := range retDbDataMap["MGMT_PORT"] {
+			appendExistingDBAttr(cfgDB, "MGMT_PORT", intf, attrList, retDbDataMap)
+		}
+	}
+
+	intfsObj := getIntfsRoot(inParams.ygRoot)
+
+	// Delete PortChannels and Bridges removed from the config
+	subOpMap := make(map[db.DBNum]map[string]map[string]db.Value)
+	subOpMap[db.ConfigDB] = make(map[string]map[string]db.Value)
+
+	// PORTCHANNEL|* tables
+	deletePCs, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_TN, 1, pcs)
+	if err == nil && len(deletePCs) > 0 {
+		subOpMap[db.ConfigDB][PORTCHANNEL_TN] = deletePCs
+	}
+
+	// PORTCHANNEL_INTERFACE|* tables
+	deleteIntfs, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_INTERFACE_TN, 1, pcs)
+	if err == nil && len(deleteIntfs) > 0 {
+		subOpMap[db.ConfigDB][PORTCHANNEL_INTERFACE_TN] = deleteIntfs
+	}
+
+	// PORTCHANNEL_MEMBER|*|* tables
+	deleteMems, err := getPCTablesForDeletion(cfgDB, PORTCHANNEL_MEMBER_TN, 2, pcMembers)
+	if err == nil && len(deleteMems) > 0 {
+		subOpMap[db.ConfigDB][PORTCHANNEL_MEMBER_TN] = deleteMems
+	}
+
+	// UMF_TRUNK_QUEUE|<pc>|<qid> tables
+	deleteTrunkQueues, err := getTrunkQueueTablesForDeletion(cfgDB, pcs)
+	if err == nil && len(deleteMems) > 0 {
+		subOpMap[db.ConfigDB]["UMF_TRUNK_QUEUE"] = deleteTrunkQueues
+	}
+
+	// BRIDGE|* tables
+	bridgeTN := IntfTypeTblMap[IntfTypeBridge].cfgDb.portTN
+	bridgeKeys, err := cfgDB.GetKeys(&db.TableSpec{Name: bridgeTN})
+	if err == nil {
+		deleteBridges := map[string]db.Value{}
+		for _, key := range bridgeKeys {
+			br := key.Get(0)
+			if _, ok := intfsObj.Interface[br]; !ok {
+				deleteBridges[br] = db.Value{}
+			}
+		}
+		if len(deleteBridges) > 0 {
+			subOpMap[db.ConfigDB][bridgeTN] = deleteBridges
+		}
+	}
+
+	// BRIDGE_MEMBER|*|* tables
+	bridgeMemTN := IntfTypeTblMap[IntfTypeBridge].cfgDb.memberTN
+	bridgeMemKeys, err := cfgDB.GetKeys(&db.TableSpec{Name: bridgeMemTN})
+	if err == nil {
+		deleteBridgeMems := map[string]db.Value{}
+		for _, key := range bridgeMemKeys {
+			br := key.Get(0)
+			intf := key.Get(1)
+
+			if _, ok := intfsObj.Interface[br]; !ok {
+				deleteBridgeMems[br+"|"+intf] = db.Value{}
+				continue
+			}
+			if intfObj, ok := intfsObj.Interface[intf]; !ok || intfObj.Config == nil || intfObj.Config.BridgeId == nil || *(intfObj.Config.BridgeId) != br {
+				deleteBridgeMems[br+"|"+intf] = db.Value{}
+			}
+		}
+		if len(deleteBridgeMems) > 0 {
+			subOpMap[db.ConfigDB][bridgeMemTN] = deleteBridgeMems
+		}
+	}
+
+	if len(subOpMap[db.ConfigDB]) > 0 {
+		updateSubOpDataMap(subOpMap, DELETE, inParams)
+	}
+	log.V(lvl.DEBUG).Infof("PortChannel Cleanup:\nPCs: %v\nPCMembers: %v\nsubOpMap: %v", pcs, pcMembers, subOpMap)
+
+	additionalConfig := make(map[string]map[string]db.Value)
+	// Handle PortChannel members@ field.
+	if pcToMembers := pcToMembersMap(); len(pcToMembers) > 0 {
+		additionalConfig[PORTCHANNEL_TN] = map[string]db.Value{}
+		for pc, mems := range pcToMembers {
+			slices.Sort(mems)
+			additionalConfig[PORTCHANNEL_TN][pc] = db.Value{Field: map[string]string{"members@": strings.Join(mems, ",")}}
+		}
+	}
+
+	// Handle default interfaces config.
+	for _, intf := range intfsObj.Interface {
+		ifName := intf.Name
+		if ifName == nil {
+			continue
+		}
+		intfType, _, err := getIntfTypeByName(*ifName)
+		if err != nil || intfType != IntfTypeEthernet {
+			continue
+		}
+		intTbl, _ := IntfTypeTblMap[intfType]
+		if _, ok := additionalConfig[intTbl.cfgDb.portTN]; !ok {
+			additionalConfig[intTbl.cfgDb.portTN] = map[string]db.Value{}
+		}
+
+		data := db.Value{Field: map[string]string{}}
+		// Disable link damping for interfaces that do not have link damping config
+		if intf.PenaltyBasedAied == nil {
+			data.Set("link_event_damping_algorithm", "disabled")
+		}
+		// Set Default learn_mode for all front panel ports
+		data.Set("learn_mode", "disable")
+		additionalConfig[intTbl.cfgDb.portTN][*ifName] = data
+	}
+	if len(additionalConfig) > 0 {
+		updateSubOpDataMap(map[db.DBNum]map[string]map[string]db.Value{
+			db.ConfigDB: additionalConfig,
+		}, REPLACE, inParams)
+	}
+	log.V(lvl.DEBUG).Infof("Setting additional config for interfaces: %v", additionalConfig)
 	return retDbDataMap, nil
 }
 
@@ -2575,6 +2613,56 @@ var DbToYang_subintf_ip_addr_key_xfmr KeyXfmrDbToYang = func(inParams XfmrParams
 	log.V(lvl.DEBUG).Info("Entering DbToYang_subintf_ip_addr_key_xfmr")
 	rmap := make(map[string]interface{})
 	return rmap, nil
+}
+
+var YangToDb_intf_csig_tag_action_xfmr FieldXfmrYangToDb = func(inParams XfmrParams) (map[string]string, error) {
+	res_map := make(map[string]string)
+	if inParams.oper == DELETE {
+		return res_map, nil
+	}
+	ifName := NewPathInfo(inParams.uri).Var("name")
+	intfType, _, err := getIntfTypeByName(ifName)
+	if err != nil {
+		return nil, err
+	}
+	if intfType != IntfTypeEthernet {
+		// Only supported for singletons.
+		log.V(lvl.ERROR).Info("YangToDb_intf_csig_tag_action_xfmr, Error: CSIG tag action is only supported for singletons.")
+		return nil, nil
+	}
+
+	csigTagActionEnum, ok := inParams.param.(ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction)
+	if !ok {
+		return nil, nil
+	}
+	csigTagActionStr, ok := yangToDbCsigTagActionMap[csigTagActionEnum]
+	if !ok {
+		return nil, errors.New("YangToDb_intf_csig_tag_action_xfmr, Error: Invalid csig-tag-action.")
+	}
+
+	res_map["csig_tag_action"] = csigTagActionStr
+	return res_map, nil
+}
+
+var DbToYang_intf_csig_tag_action_xfmr FieldXfmrDbtoYang = func(inParams XfmrParams) (map[string]interface{}, error) {
+	log.V(lvl.DEBUG).Info("DbToYang_intf_csig_tag_action_xfmr: inParams: ", inParams)
+
+	prtInst, err := retrieveDbEntryForSingletonInterface(inParams)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]interface{})
+	csigTagActionStr, ok := prtInst.Field["csig_tag_action"]
+	if !ok {
+		return nil, nil
+	}
+	csigTagActionEnum, ok := dbToYangCsigTagActionMap[csigTagActionStr]
+	if !ok {
+		return nil, errors.New("csig_tag_action field read from DB not found in dbToYangCsigTagActionMap.")
+	}
+	result["csig-tag-action"] = ocbinds.E_OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction.ΛMap(csigTagActionEnum)["E_OpenconfigInterfaces_Interfaces_Interface_Config_CsigTagAction"][int64(csigTagActionEnum)].Name
+	return result, nil
 }
 
 var YangToDb_subif_index_xfmr FieldXfmrYangToDb = func(inParams XfmrParams) (map[string]string, error) {
@@ -3246,7 +3334,17 @@ var YangToDb_intf_ip_addr_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (
 		}
 	} */
 
-	log.V(lvl.DEBUG).Info("YangToDb_intf_subintf_ip_xfmr : subIntfmap : ", subIntfmap)
+	// In case of a Set-Replace for subinterface/ip*/addresses subtree, do an Update instead to
+	// preserve system-written fields in MGMT_INTERFACE
+	if inParams.oper == REPLACE &&
+		(intfType == IntfTypeMgmt || intfType == IntfTypeMgmtBond) {
+		updateSubOpDataMap(map[db.DBNum]map[string]map[string]db.Value{
+			db.ConfigDB: subIntfmap,
+		}, UPDATE, inParams)
+		return nil, nil
+	}
+
+	log.V(lvl.DEBUG).Infof("YangToDb_intf_subintf_ip_xfmr : subIntfmap : ", subIntfmap)
 	return subIntfmap, err
 }
 
@@ -3942,26 +4040,6 @@ func retrievePortChannelAssociatedWithIntf(inParams *XfmrParams, ifName *string)
 		return &lagStr, err
 	}
 	return nil, err
-}
-
-// Extracts a float32 string from the DB entry field. Converts this string to a 4 byte binary value compatible with oc:ieeefloat32 format.
-func extractFloat32Str(fieldName string, dbEntry *db.Value) (ocbinds.Binary, error) {
-	redisStr, ok := dbEntry.Field[fieldName]
-	if !ok {
-		return nil, fmt.Errorf("Required field %s does not exist in redis table.", fieldName)
-	}
-	base64Str, err := float32StrTo4Bytes(redisStr)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to convert field %s to float string. Value was %s. Error %w", fieldName, redisStr, err)
-	}
-	return base64Str, err
-}
-
-// Log provided error as warning if not nil.
-func logErrorAsWarning(err error) {
-	if err != nil {
-		log.V(lvl.WARNING).Info(err)
-	}
 }
 
 func getPCTablesForDeletion(cfgDB *db.DB, tblName string, keyLen int, keysToKeep map[string]bool) (map[string]db.Value, error) {
@@ -5747,7 +5825,7 @@ var DbToYang_intf_state_blackhole_xfmr SubTreeXfmrDbToYang = func(inParams XfmrP
 	}
 
 	targetUriPath, err := getYangPathFromUri(pathInfo.Path)
-	if err != nil || targetUriPath != "/openconfig-interfaces:interfaces/interface/state/google-pins-interfaces:blackhole" {
+	if err != nil || !strings.HasPrefix(targetUriPath, "/openconfig-interfaces:interfaces/interface/state/google-pins-interfaces:blackhole") {
 		return nil
 	}
 
@@ -5794,15 +5872,44 @@ var DbToYang_intf_state_blackhole_xfmr SubTreeXfmrDbToYang = func(inParams XfmrP
 		return e
 	}
 
+	is_ts_set := false
 	// Use counter specific timestamp if there is one.
 	ts, ok := entry.Field["PORT_STAT_TIME_STAMP_USEC_last"]
-	if !ok || ts == "" {
+	if ok && ts != "" {
+		if usec, err := strconv.ParseInt(ts, 10, 64); err == nil {
+			utils.UpdateYGSTimestamp(*inParams.ygRoot, bhObj, usec*1000)
+			is_ts_set = true
+		} else {
+			log.V(lvl.ERROR).Infof("Invalid timestamp for port %s, %v", ifName, ts)
+		}
+	}
+
+	bItvlTbl := "COUNTERS_PORT_BAD_INTERVALS"
+	entry, err = d.GetEntry(
+		&db.TableSpec{Name: bItvlTbl}, db.Key{Comp: []string{oid}})
+	if err != nil {
+		log.V(lvl.DEBUG).Info("DbToYang_intf_state_blackhole_xfmr : key missed from COUNTERS_DB: err: ", err)
 		return nil
 	}
-	if usec, err := strconv.ParseInt(ts, 10, 64); err == nil {
-		utils.UpdateYGSTimestamp(*inParams.ygRoot, bhObj, usec*1000)
-	} else {
-		log.V(lvl.DEBUG).Infof("Invalid timestamp for port %s, %v", ifName, ts)
+	if e := readAndParseCounter(&entry, "PORT_BAD_INTERVALS", &bhObj.BadIntervals); e != nil {
+		switch e.(type) {
+		case tlerr.NotFoundError:
+		default:
+			return e
+		}
+	}
+
+	if !is_ts_set {
+		// If bh timestamp is not available, use the timestamp in bi table is there is one.
+		ts, ok = entry.Field["PORT_STAT_TIME_STAMP_USEC"]
+		if ok && ts != "" {
+			if usec, err := strconv.ParseInt(ts, 10, 64); err == nil {
+				utils.UpdateYGSTimestamp(*inParams.ygRoot, bhObj, usec*1000)
+				return nil
+			} else {
+				log.V(lvl.ERROR).Infof("Invalid timestamp for port %s, %v", ifName, ts)
+			}
+		}
 	}
 
 	return nil
@@ -5880,8 +5987,7 @@ var DbToYang_intf_state_hst_xfmr SubTreeXfmrDbToYang = func(inParams XfmrParams)
 		{"abwc_digest_7", &hObj.AbwcDigests_7},
 	}
 	for _, fl := range fls {
-		*fl.leaf, err = extractFloat32Str(fl.field, &entry)
-		logErrorAsWarning(err)
+		*fl.leaf = extractFloat32Str(fl.field, &entry)
 	}
 
 	// Use counter specific timestamp if there is one.

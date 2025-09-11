@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -2306,93 +2305,6 @@ func getGnpsiServerData(database *db.DB) gnpsiServer {
 	return serverData
 }
 
-// copied over from xfmr_google_ptp.go
-type fieldInt32LeafPair struct {
-	field string
-	leaf  **int32
-}
-
-type fieldUint32LeafPair struct {
-	field string
-	leaf  **uint32
-}
-
-type fieldInt64LeafPair struct {
-	field string
-	leaf  **int64
-}
-
-type fieldFloat64LeafPair struct {
-	field string
-	leaf  **float64
-}
-
-type pairTypes interface {
-	fieldInt32LeafPair | fieldUint32LeafPair | fieldInt64LeafPair | fieldU64LeafPair | fieldFloat64LeafPair
-}
-
-func processFieldLeafPairs[T pairTypes](entry *db.Value, fls []T) error {
-	for _, fl := range fls {
-		fieldValue := reflect.ValueOf(fl)
-		switch any(fl).(type) {
-		case fieldUint32LeafPair:
-			attr := fieldValue.Interface().(fieldUint32LeafPair)
-			fieldValue, ok := entry.Field[attr.field]
-			if !ok {
-				log.V(lvl.ERROR).Infof("Attr %v missing", attr)
-				continue
-			}
-			value, err := strconv.ParseUint(fieldValue, 10, 32)
-			if err != nil {
-				return err
-			}
-			valueUint32 := uint32(value)
-			*attr.leaf = &valueUint32
-		case fieldInt64LeafPair:
-			attr := fieldValue.Interface().(fieldInt64LeafPair)
-			fieldValue, ok := entry.Field[attr.field]
-			if !ok {
-				log.V(lvl.ERROR).Infof("Attr %v missing", attr.field)
-				continue
-			}
-			value, err := strconv.ParseInt(fieldValue, 10, 64)
-			if err != nil {
-				return err
-			}
-			*attr.leaf = &value
-		case fieldU64LeafPair:
-			attr := fieldValue.Interface().(fieldU64LeafPair)
-			fieldValue, ok := entry.Field[attr.field]
-			if !ok {
-				log.V(lvl.ERROR).Infof("Attr %v missing", attr)
-				continue
-			}
-			value, err := strconv.ParseUint(fieldValue, 10, 64)
-			if err != nil {
-				return err
-			}
-			*attr.leaf = &value
-		case fieldFloat64LeafPair:
-			attr := fieldValue.Interface().(fieldFloat64LeafPair)
-			fieldValue, ok := entry.Field[attr.field]
-			if !ok {
-				log.V(lvl.ERROR).Infof("Attr %v missing", attr)
-				continue
-			}
-			value, err := strconv.ParseFloat(fieldValue, 64)
-			if err != nil {
-				return err
-			}
-			value64 := float64(value)
-			*attr.leaf = &value64
-		default:
-			log.V(lvl.ERROR).Infof("Unknown PTP field type during parse")
-
-		}
-	}
-	return nil
-}
-
 func getGrpcConnectionState(serverObj *ocbinds.OpenconfigSystem_System_GrpcServers_GrpcServer, grpcName, address, port string, grpcCounters db.Value) error {
 	portNum, err := strconv.ParseUint(port, 10, 32)
 	if err != nil {
@@ -2881,6 +2793,13 @@ var YangToDb_system_diag_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (m
 		}
 	}
 
+	badInvlEnable := "disabled"
+	if diagObj.Config.BadIntervalsMonitoringEnable != nil {
+		if *diagObj.Config.BadIntervalsMonitoringEnable {
+			badInvlEnable = "enabled"
+		}
+	}
+
 	lpm := "0"
 	if diagObj.Config.LpmMissesThreshold != nil {
 		lpm = strconv.FormatInt(int64(*diagObj.Config.LpmMissesThreshold), 10)
@@ -2975,6 +2894,12 @@ var YangToDb_system_diag_xfmr SubTreeXfmrYangToDb = func(inParams XfmrParams) (m
 					"state": congestionEnable},
 			},
 		},
+		"BAD_INTERVALS_MONITORING": map[string]db.Value{
+			"GLOBAL": db.Value{
+				Field: map[string]string{
+					"state": badInvlEnable},
+			},
+		},
 		"BLACKHOLE_SWITCH_PROFILE": map[string]db.Value{
 			"GLOBAL": db.Value{
 				Field: map[string]string{
@@ -3066,6 +2991,28 @@ func populateDiag(diagObj *ocbinds.OpenconfigSystem_System_Diag, cfgDb, stateDb 
 		if err != nil {
 			return err
 		}
+	} else if !tlerr.IsTranslibRedisClientEntryNotExist(err) {
+		return err
+	}
+
+	entry, err = cfgDb.GetEntry(&db.TableSpec{Name: "BAD_INTERVALS_MONITORING"}, db.Key{Comp: []string{"GLOBAL"}})
+	if err == nil {
+		badInvlEnable := false
+		if entry.Get("state") == "enabled" {
+			badInvlEnable = true
+		}
+		diagObj.Config.BadIntervalsMonitoringEnable = &badInvlEnable
+	} else if !tlerr.IsTranslibRedisClientEntryNotExist(err) {
+		return err
+	}
+
+	entry, err = stateDb.GetEntry(&db.TableSpec{Name: "BAD_INTERVALS_MONITORING"}, db.Key{Comp: []string{"GLOBAL"}})
+	if err == nil {
+		badInvlEnableS := false
+		if entry.Get("state") == "enabled" {
+			badInvlEnableS = true
+		}
+		diagObj.State.BadIntervalsMonitoringEnable = &badInvlEnableS
 	} else if !tlerr.IsTranslibRedisClientEntryNotExist(err) {
 		return err
 	}

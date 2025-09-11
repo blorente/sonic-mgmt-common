@@ -20,4 +20,11 @@ module openconfig-platform-annot {
         sonic-ext:subtree-transformer "port_breakout_subtree_xfmr";
       }
     }
+
+    deviation /oc-platform:components/oc-platform:component/oc-platform:integrated-circuit/google-pins-platform:pins-csig {
+        deviate add {
+            sonic-ext:subtree-transformer "pfm_components_ic_csig_xfmr";
+            sonic-ext:table-name "HST_CONFIG";
+        }
+    }
 }

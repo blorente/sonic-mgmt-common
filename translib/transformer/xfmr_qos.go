@@ -29,7 +29,7 @@ const (
 
 var qMapStr map[string]interface{}
 var queueTypes []string = []string{CPU, FRONT_PANEL}
-var qCounterTblAttr []string = []string{"transmit-pkts", "transmit-octets", "dropped-pkts", "pfc-deadlock-detected", "pfc-deadlock-restored", "pfc-tx-pkts", "pfc-tx-dropped-pkts"}
+var qCounterTblAttr []string = []string{"transmit-pkts", "transmit-octets", "dropped-pkts", "google-pins-qos:pfc-deadlock-detected", "google-pins-qos:pfc-deadlock-restored", "google-pins-qos:pfc-tx-pkts", "google-pins-qos:pfc-tx-dropped-pkts"}
 var ocQueueHwQueueMap map[string]map[string]string
 var queueMapMutex sync.RWMutex // protects ocQueueHwQueueMap
 
@@ -324,19 +324,19 @@ func getQueueSpecificCounterAttr(targetUriPath string, entry *db.Value, counters
 		counters.DroppedPkts = &val
 		return true, e
 
-	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/pfc-deadlock-detected":
+	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/google-pins-qos:pfc-deadlock-detected":
 		e := getQosCounters(entry, "PFC_WD_QUEUE_STATS_DEADLOCK_DETECTED", &counters.PfcDeadlockDetected)
 		return true, e
 
-	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/pfc-deadlock-restored":
+	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/google-pins-qos:pfc-deadlock-restored":
 		e := getQosCounters(entry, "PFC_WD_QUEUE_STATS_DEADLOCK_RESTORED", &counters.PfcDeadlockRestored)
 		return true, e
 
-	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/pfc-tx-pkts":
+	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/google-pins-qos:pfc-tx-pkts":
 		e := getQosCounters(entry, "PFC_WD_QUEUE_STATS_TX_PACKETS", &counters.PfcTxPkts)
 		return true, e
 
-	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/pfc-tx-dropped-pkts":
+	case "/openconfig-qos:qos/interfaces/interface/output/queues/queue/state/google-pins-qos:pfc-tx-dropped-pkts":
 		e := getQosCounters(entry, "PFC_WD_QUEUE_STATS_TX_DROPPED_PACKETS", &counters.PfcTxDroppedPkts)
 		return true, e
 
@@ -561,6 +561,8 @@ func getOCQueueName(intfName, queueName string) (string, error) {
 }
 
 func GetIdFromFPQueueName(queueName string) (string, error) {
+	queueMapMutex.RLock()
+	defer queueMapMutex.RUnlock()
 	return getNativeQueueNameByQueueType(FRONT_PANEL, queueName)
 }
 

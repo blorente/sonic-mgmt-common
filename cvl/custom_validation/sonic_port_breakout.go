@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	pollInterval     = 100 * time.Millisecond
-	lockPollAttempts = 10 * 3 // Up to 3 sec
+	pollInterval = 100 * time.Millisecond
+
+	// TODO(427507175): Consider lowering after investigation
+	lockPollAttempts = 10 * 15 // Up to 15 sec
 	ipPollAttempts   = 50
 )
 

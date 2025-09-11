@@ -25,60 +25,101 @@ module openconfig-optical-switch {
 
     This model is not yet available publicly through OpenConfig.";
 
-  oc-ext:openconfig-version "0.1.0";
+  oc-ext:openconfig-version "0.2.0";
+
+  revision "2024-11-13" {
+    description "Revised to use named ports.";
+    reference "0.2.0";
+  }
 
   revision "2023-08-31" {
     description "Initial model.";
     reference "0.1.0";
   }
 
-  grouping port-id-config-reference {
+  grouping port-name-config-reference {
     description
-      "References to the config slot and port number leaves for reuse.";
+      "References to the config port name leaves for reuse.";
 
-    leaf slot-number {
+    leaf port-name {
       type leafref {
-        path "../config/slot-number";
+        path "../config/port-name";
       }
-      description "The optical switch module slot number containing the port.";
-    }
-    leaf port-number {
-      type leafref {
-        path "../config/port-number";
-      }
-      description "The port number.";
+      description "The port name.";
     }
   }
 
-  grouping port-id-state-reference {
+  grouping port-name-state-reference {
     description
-      "References to the state slot and port number leaves for reuse.";
+      "References to the state port name leaves for reuse.";
 
-    leaf slot-number {
+    leaf port-name {
       type leafref {
-        path "../state/slot-number";
+        path "../state/port-name";
       }
-      description "The optical switch module slot number containing the port.";
-    }
-    leaf port-number {
-      type leafref {
-        path "../state/port-number";
-      }
-      description "The port number.";
+      description "The port name.";
     }
   }
 
-  grouping port-id {
+  grouping port-name-reference {
     description
-      "Slot and port number leaves which uniquely identify one optical port.";
+      "References a named port in the port config.";
 
+    leaf port-name {
+      type leafref {
+        path "/oc-opt-sw:optical-switch/ports/port/name";
+      }
+      description "The port name.";
+    }
+  }
+
+  // Port configuration
+  grouping port-config {
+    description "Configuration for OCS ports.";
+
+    leaf name {
+      type string;
+      description "The port name for this port.";
+    }
     leaf slot-number {
       type int32;
-      description "The optical switch module slot number containing the port.";
+      description "The slot number for this port.";
     }
     leaf port-number {
       type int32;
-      description "The port number.";
+      description "The port number for this port.";
+    }
+  }
+
+  grouping ports-top {
+    description "Top-level grouping for port config.";
+
+    container ports {
+      description "Enclosing container for port configs.";
+
+      list port {
+        key "name";
+        description "List of all defined optical ports for the switch.";
+
+        leaf name {
+          type leafref {
+            path "../config/name";
+          }
+          description "The port name.";
+        }
+
+        container config {
+          uses port-config;
+          description "Configuration for optical ports.";
+        }
+
+        container state {
+          config false;
+          uses port-config;
+
+          description "Operational state data for optical ports.";
+        }
+      }
     }
   }
 
@@ -87,11 +128,13 @@ module openconfig-optical-switch {
     description
       "Configuration for optical port connections (cross-connections).";
 
-    uses port-id;
+    uses port-name-reference;
 
-    leaf peer-port-number {
-      type int32;
-      description "The peer port number to connect to.";
+    leaf peer-port-name {
+      type leafref {
+        path "/optical-switch/ports/port/name";
+      }
+      description "The peer port name to connect to.";
     }
 
     leaf peer-slot-number {
@@ -114,11 +157,11 @@ module openconfig-optical-switch {
         "Enclosing container for optical port connections.";
 
       list port-connection {
-        key "slot-number port-number";
+        key "port-name";
         description
           "List of all defined optical port connections for the switch.";
 
-        uses port-id-config-reference;
+        uses port-name-config-reference;
 
         container config {
           uses port-connection-config;
@@ -144,7 +187,7 @@ module openconfig-optical-switch {
     description
       "Configuration for optical port blocking.";
 
-    uses port-id;
+    uses port-name-reference;
 
     leaf port-optical-blocking-enable {
       type boolean;
@@ -168,12 +211,12 @@ module openconfig-optical-switch {
         "Enclosing container for optical port blocking.";
 
       list port-blocking {
-        key "slot-number port-number";
+        key "port-name";
 
         description
           "List of all optical port blocking configuration for the switch.";
 
-        uses port-id-config-reference;
+        uses port-name-config-reference;
 
         container config {
           uses port-optical-blocking-config;
@@ -199,7 +242,7 @@ module openconfig-optical-switch {
     description
       "Configuration for optical power measurement.";
 
-    uses port-id;
+    uses port-name-reference;
 
     leaf measurement-wavelength {
       type oc-types:ieeefloat32;
@@ -251,12 +294,12 @@ module openconfig-optical-switch {
         "Enclosing container for optical power measurement";
 
       list port-optical-power-measurement {
-        key "slot-number port-number";
+        key "port-name";
 
         description
           "List of all optical power measurements.";
 
-        uses port-id-config-reference;
+        uses port-name-config-reference;
 
         container config {
           uses port-optical-power-measurement-config;
@@ -280,7 +323,7 @@ module openconfig-optical-switch {
     description
       "Configuration for port optical attentuation.";
 
-    uses port-id;
+    uses port-name-reference;
 
     leaf attenuation-mode {
       type enumeration {
@@ -328,12 +371,12 @@ module openconfig-optical-switch {
         "Enclosing container for port optical attenuation.";
 
       list optical-attenuation {
-        key "slot-number port-number";
+        key "port-name";
 
         description
           "List of all defined port optical attenuation settings.";
 
-        uses port-id-config-reference;
+        uses port-name-config-reference;
 
         container config {
           uses port-optical-attenuation-config;
@@ -359,7 +402,7 @@ module openconfig-optical-switch {
     description
       "Configuration for port metadata.";
 
-    uses port-id;
+    uses port-name-reference;
 
     leaf metadata {
       type binary;
@@ -380,12 +423,12 @@ module openconfig-optical-switch {
         "Enclosing container for port metadata.";
 
       list port-metadata {
-        key "slot-number port-number";
+        key "port-name";
 
         description
           "List of all defined port metadata for the switch.";
 
-        uses port-id-config-reference;
+        uses port-name-config-reference;
 
         container config {
           uses port-metadata-config;
@@ -586,7 +629,7 @@ module openconfig-optical-switch {
     description
       "Operational state data for port statuses.";
 
-    uses port-id;
+    uses port-name-reference;
 
     leaf port-status {
       type enumeration {
@@ -629,12 +672,12 @@ module openconfig-optical-switch {
         "Enclosing container for port statuses.";
 
       list port-status {
-        key "slot-number port-number";
+        key "port-name";
 
         description
           "List of port statuses for the switch.";
 
-        uses port-id-state-reference;
+        uses port-name-state-reference;
 
         container state {
           uses port-status-state;
@@ -679,6 +722,7 @@ module openconfig-optical-switch {
       }
 
       uses optical-switch-topology-top;
+      uses ports-top;
       uses port-connection-recovery-top;
       uses port-connections-top;
       uses port-statuses-top;

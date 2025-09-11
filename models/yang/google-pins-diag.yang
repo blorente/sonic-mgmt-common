@@ -22,7 +22,19 @@ module google-pins-diag {
     "Google Specific extensions to OpenConfig system model to support additional
     diagnosis features.";
 
-  oc-ext:openconfig-version "0.1.0";
+  oc-ext:openconfig-version "0.2.0";
+
+  revision 2025-07-29 {
+    description
+      "Add bad interval monitor.";
+    reference "0.2.0";
+  }
+
+  revision 2025-02-26 {
+    description
+      "Add bad interval monitor.";
+    reference "0.2.0";
+  }
 
   revision 2024-02-09 {
     description
@@ -53,6 +65,12 @@ module google-pins-diag {
       default false;
       description
         "Enables the congestion event collection feature";
+    }
+    leaf bad-intervals-monitoring-enable {
+      type boolean;
+      default false;
+      description
+        "Enables the bad interval event collection feature";
     }
     leaf lpm-misses-threshold {
       description

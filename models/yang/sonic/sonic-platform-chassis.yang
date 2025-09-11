@@ -96,7 +96,7 @@ module sonic-platform-chassis {
                     type enumeration {
                         enum generic;
                         enum switch1;
-                        enum torswitch;
+                        enum torswitch1;
                         enum alpinevs;
                         enum switch4;
                         enum switch2;

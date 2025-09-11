@@ -25,7 +25,25 @@ module google-pins-interfaces {
   description
     "Google Specific extensions to OpenConfig interface model.";
 
-  oc-ext:openconfig-version "0.18.0";
+  oc-ext:openconfig-version "0.20.0";
+
+  revision 2025-04-21 {
+    description
+      "Adding new enum values for port-direction leaf.";
+    reference "0.21.0";
+  }
+
+  revision 2025-03-18 {
+    description
+      "Adding augments for per interface CSIG tag actions.";
+    reference "0.20.0";
+  }
+
+  revision 2025-02-26 {
+    description
+      "Adding bad-intervals.";
+    reference "0.19.0";
+  }
 
   revision 2024-08-08 {
     description
@@ -596,15 +614,23 @@ module google-pins-interfaces {
         }
         enum HOST_FACING {
           description
-            "Port direction is host-facing";
+            "Port direction is host-facing in a ToR link";
         }
         enum FABRIC_FACING {
           description
-            "Port direction is fabric-facing";
+            "Port direction is fabric-facing in a ToR link";
         }
         enum VENDOR_HOST_FACING {
           description
             "Port direction is vendor host-facing";
+        }
+        enum FABRIC_DOWNLINK {
+          description
+            "Port direction is downlink in a fabric switch (non-ToR) link";
+        }
+        enum FABRIC_UPLINK {
+          description
+            "Port direction is uplink in a fabric switch (non-ToR) link";
         }
       }
       description
@@ -630,6 +656,23 @@ module google-pins-interfaces {
       description
         "Specify the logical bridge interface to which
         this interface belongs.";
+    }
+    leaf csig-tag-action {
+      default STRIP_TAG;
+      type enumeration {
+        enum STRIP_TAG {
+          description
+            "Egress port strips CSIG tags on all outgoing packets.";
+        }
+        enum KEEP_TAG {
+          description
+            "Egress port keeps and conditionally updates CSIG tags on all outgoing packets.";
+        }
+      }
+      description
+        "Congestion Signaling (CSIG) tag action which decides if a port must
+        strip all congestion signaling tags on all packets egressing that port,
+        or if it must keep and conditionally update those tags.";
     }
   }
 
@@ -671,12 +714,17 @@ module google-pins-interfaces {
           feature";
         type oc-yang:counter64;
       }
+      leaf bad-intervals {
+        description
+          "The number of bad intervals found by bad interval feature.";
+        type oc-yang:counter64;
+      }
     }
 
     container hst {
       description
         "Container for High resolution Switch Telemetry (HST) counters.
-        Each counter is a bucket from a historgram that tracks available
+        Each counter is a bucket from a histogram that tracks available
         bandwidth (utilization)";
 
       leaf abwc-digests-0 {

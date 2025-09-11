@@ -7,6 +7,20 @@ module openconfig-optical-switch-annot {
     import sonic-extensions { prefix sonic-ext; }
     import openconfig-optical-switch { prefix oc-opt-sw; }
 
+    // Ports
+    deviation /oc-opt-sw:optical-switch/oc-opt-sw:ports/oc-opt-sw:port {
+        deviate add {
+            sonic-ext:db-name "CONFIG_DB";
+            sonic-ext:table-name "OCS_PORTS";
+        }
+    }
+
+    deviation /oc-opt-sw:optical-switch/oc-opt-sw:ports/oc-opt-sw:port/oc-opt-sw:state {
+        deviate add {
+            sonic-ext:db-name "STATE_DB";
+        }
+    }
+
     // Port Connections
     deviation /oc-opt-sw:optical-switch/oc-opt-sw:port-connections/oc-opt-sw:port-connection {
         deviate add {

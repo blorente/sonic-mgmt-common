@@ -15,6 +15,11 @@ module sonic-platform-node {
     description
         "SONIC PLATFORM NODE";
 
+    revision 2025-08-07 {
+        description
+            "Add HST/CSIG support.";
+    }
+
     revision 2020-11-23 {
         description
             "Initial revision.";
@@ -74,6 +79,25 @@ module sonic-platform-node {
                 }
                 leaf fully-qualified-name {
                     type string;
+                }
+            }
+        }
+
+        container HST_CONFIG {
+            sonic-ext:db-name "CONFIG_DB";
+            list HST_CONFIG_LIST {
+                key name;
+
+                leaf name {
+                    type string {
+                        pattern "GLOBAL";
+                    }
+                }
+
+                leaf CSIG_SUPPORTED {
+                    type string {
+                        pattern "none|hw_assist|sw_assist";
+                    }
                 }
             }
         }

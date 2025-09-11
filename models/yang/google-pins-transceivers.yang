@@ -199,7 +199,7 @@ module google-pins-transceivers {
     description
       "Ethernet compliance code: 2X400GBASE_AOC";
   }
-  // LINT.ThenChange(//depot/google3/net/infra/telemetry/pictormon/configs/fabric/sfpData.pb.txt:sfpPortSubtype)
+  // LINT.ThenChange(
 
   // grouping statements
   grouping google-pins-transceiver-physical-channel-state {

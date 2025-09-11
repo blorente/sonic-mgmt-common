@@ -991,7 +991,7 @@ module openconfig-network-instance {
         also use the network instance type to infer the type of
         service they advertise; for example MPLS signalling
         for an L2VSI network instance would infer a VPLS service
-        whereas a type of L2PTP would infer a VPWS (pseudo-wire)
+        whereas a type of L2 would infer a VPWS (pseudo-wire)
         service";
     }
 

@@ -24,6 +24,11 @@ module sonic-port {
     description
         "SONIC PORT";
 
+    revision 2025-03-20 {
+        description
+            "Added csig-tag-action field";
+    }
+
     revision 2024-02-06 {
         description
             "Use enum type for loopback-mode";
@@ -279,6 +284,12 @@ module sonic-port {
                 leaf learn_mode {
                     type learn-mode-type;
                     default disable;
+                }
+
+                leaf csig_tag_action {
+                    type string;
+                    description
+                        "Describes if CSIG tag should be stripped, or kept.";
                 }
             }
         }

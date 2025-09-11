@@ -660,4 +660,20 @@ module openconfig-interfaces-annot {
             sonic-ext:subtree-transformer "intf_aied_link_damping_xfmr";
         }
     }
+
+    deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:config/google-pins-if:csig-tag-action {
+        deviate add {
+            sonic-ext:field-transformer "intf_csig_tag_action_xfmr";
+            sonic-ext:table-name "PORT";
+            sonic-ext:db-name "CONFIG_DB";
+        }
+    }
+
+    deviation /oc-intf:interfaces/oc-intf:interface/oc-intf:state/google-pins-if:csig-tag-action {
+        deviate add {
+            sonic-ext:field-transformer "intf_csig_tag_action_xfmr";
+            sonic-ext:table-name "PORT_TABLE";
+            sonic-ext:db-name "APPL_STATE_DB";
+        }
+    }
 }
