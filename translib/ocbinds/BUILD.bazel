@@ -1,15 +1,17 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
+LIB_SRCS = [
+    "emitjson.go",
+    "emitjson_select.go",
+    "emitjson_sort.go",
+    "oc.go",
+    "schema.go",
+]
+
 go_library(
     name = "ocbinds",
-    srcs = [
-        "emitjson.go",
-        "emitjson_select.go",
-        "emitjson_sort.go",
-        "oc.go",
-        "schema.go",
-    ],
+    srcs = LIB_SRCS,
     importpath = "github.com/Azure/sonic-mgmt-common/translib/ocbinds",
     visibility = ["//visibility:public"],
     deps = [
@@ -40,10 +42,10 @@ go_test(
 
 pkg_tar(
     name = "ocbinds_tar",
+    srcs = LIB_SRCS,
     mode = "0755",
     package_dir = "/sonic/src/sonic-mgmt-common/translib/ocbinds",
     visibility = ["//visibility:public"],
-    deps = [":ocbinds"],
 )
 
 genrule(
@@ -56,7 +58,6 @@ genrule(
           "find ./yang -name *.yang -exec mv {} to_use/ \\; && " +
           "rm -rf to_use/*-annot.yang && " +
           "./$(location @com_github_openconfig_ygot//generator) -generate_fakeroot -output_file $@ -package_name ocbinds -generate_fakeroot -fakeroot_name=device -compress_paths=false -exclude_modules ietf-interfaces -path . to_use/*yang",
-
     tools = ["@com_github_openconfig_ygot//generator"],
 )
 

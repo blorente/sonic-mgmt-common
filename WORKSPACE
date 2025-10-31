@@ -44,11 +44,6 @@ pip_install(
     requirements = "//third_party/pip:requirements.txt",
 )
 
-local_repository(
-    name = "sonic-gnmi",
-    path = "../sonic-gnmi",
-)
-
 http_archive(
     name = "rules_foreign_cc",
     sha256 = "476303bd0f1b04cc311fc258f1708a5f6ef82d3091e53fd1977fa20383425a6a",
@@ -96,8 +91,8 @@ http_archive(
     build_file_content = libyangBUILD,
     patch_args = ["-p1"],
     patches = [
-        "@sonic-gnmi//patches:libyang-repo.patch",
-        "@sonic-gnmi//patches:libyang.patch",
+        "//patches:libyang-repo.patch",
+        "//patches:libyang.patch",
     ],
     #sha256 = "c4498a77a7c12a28c9911f993eeafbf2badd2ecea58bb74781bd61cfc635e4c9",
     #strip_prefix = "libyang-1.0.215",
@@ -159,6 +154,54 @@ http_archive(
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
+
+buildimageBUILD = """
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+filegroup(
+    name = "exported_yangs",
+    srcs = glob(["src/sonic-yang-models/yang-models/*.yang"]),
+    visibility = ["//visibility:public"],
+)
+filegroup(
+    name = "exported_yang_templates",
+    srcs = glob(["src/sonic-yang-models/yang-templates/*.yang.j2"]),
+    visibility = ["//visibility:public"],
+)
+genrule(
+    name = "yang-file-export",
+    srcs = [
+        ":exported_yangs",
+        ":exported_yang_templates",
+    ],
+    outs = [
+        "sonic-yangs-export.tar",
+        "sonic-yang-templates-export.tar",
+    ],
+    cmd = "for f in $(locations :exported_yangs); do " +
+          "  tar -r -f $(@D)/sonic-yangs-export.tar -C $$(dirname $$f) `basename $$f`;" +
+          "done; " +
+          "for f in $(locations :exported_yang_templates); do " +
+          "  tar -r -f $(@D)/sonic-yang-templates-export.tar -C $$(dirname $$f) `basename $$f`;" +
+          "done;",
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "sonic-cfggen",
+    srcs = glob(["src/sonic-config-engine/*"]),
+    mode = "0644",
+    package_dir = "/sonic-config-engine",
+    # strip_prefix = "/testdata",
+    visibility = ["//visibility:public"],
+)
+"""
+
+new_git_repository(
+    name = "sonic-buildimage",
+    branch = "master",
+    build_file_content = buildimageBUILD,
+    remote = "https://github.com/sonic-net/sonic-buildimage",
+)
 
 http_archive(
     name = "io_bazel_rules_go",
