@@ -17,7 +17,3 @@ bazel-bin
 bazel-out
 bazel-testlogs
 bazel-sonic-mgmt-common
-
-#Bazel Module Files. To be ignored until migration to bazel modules completed.
-MODULE.bazel*
-

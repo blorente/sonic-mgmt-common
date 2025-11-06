@@ -1,0 +1,72 @@
+module(
+    name = "sonic_mgmt_common",
+    version = "1.0.0",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.6.3")
+bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
+bazel_dep(name = "protobuf", version = "21.7")
+bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "gazelle", version = "0.46.0")
+
+# Python toolchain configuration
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.8",
+)
+
+# Pip dependencies
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pip",
+    python_version = "3.8",
+    requirements_lock = "//third_party/pip:requirements_lock.txt",
+)
+use_repo(pip, "pip")
+
+# Go toolchain and dependencies
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.21.3")
+
+# Go dependencies from go.mod
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+
+# Expose all Go repositories that are referenced in BUILD files
+use_repo(
+    go_deps,
+    "com_github_antchfx_jsonquery",
+    "com_github_antchfx_xmlquery",
+    "com_github_antchfx_xpath",
+    "com_github_go_redis_redis_v7",
+    "com_github_godbus_dbus_v5",
+    "com_github_golang_glog",
+    "com_github_golang_groupcache",
+    "com_github_google_go_cmp",
+    "com_github_kylelemons_godebug",
+    "com_github_maruel_natural",
+    "com_github_openconfig_gnmi",
+    "com_github_openconfig_goyang",
+    "com_github_openconfig_ygot",
+    "com_github_philopon_go_toposort",
+    "com_github_pkg_profile",
+    "com_github_redis_go_redis_v9",
+    "com_github_tredoe_osutil",
+    "com_github_workiva_go_datastructures",
+    "org_golang_google_grpc",
+    "org_golang_x_text",
+)
+
+git_repository = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:git.bzl",
+    "git_repository",
+)
+
+git_repository(
+    name = "sonic-buildimage",
+    branch = "master",
+    build_file = "//third_party/sonic_build_image:BUILD.bazel",
+    remote = "https://github.com/sonic-net/sonic-buildimage",
+)
