@@ -34,6 +34,72 @@ go_sdk.download(version = "1.21.3")
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 
+# Apply patches to Go dependencies that require customization
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:github.com-openconfig-gnmi.patch",
+    ],
+    path = "github.com/openconfig/gnmi",
+    strip_prefix = "gnmi-0.11.0",
+    urls = ["https://github.com/openconfig/gnmi/archive/refs/tags/v0.11.0.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:github.com-openconfig-ygot.patch",
+        "//patches/ygot:ygot.patch",
+    ],
+    path = "github.com/openconfig/ygot",
+    strip_prefix = "ygot-0.13.1",
+    urls = ["https://github.com/openconfig/ygot/archive/refs/tags/v0.13.1.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches/goyang:goyang.patch",
+    ],
+    path = "github.com/openconfig/goyang",
+    strip_prefix = "goyang-0.2.9",
+    urls = ["https://github.com/openconfig/goyang/archive/refs/tags/v0.2.9.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:jsonquery.patch",
+    ],
+    path = "github.com/antchfx/jsonquery",
+    strip_prefix = "jsonquery-1.1.4",
+    urls = ["https://github.com/antchfx/jsonquery/archive/refs/tags/v1.1.4.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:xmlquery.patch",
+    ],
+    path = "github.com/antchfx/xmlquery",
+    strip_prefix = "xmlquery-1.3.1",
+    urls = ["https://github.com/antchfx/xmlquery/archive/refs/tags/v1.3.1.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:xpath.patch",
+    ],
+    path = "github.com/antchfx/xpath",
+    strip_prefix = "xpath-1.1.10",
+    urls = ["https://github.com/antchfx/xpath/archive/refs/tags/v1.1.10.tar.gz"],
+)
+go_deps.archive_override(
+    patch_strip = 1,
+    patches = [
+        "//patches:glog.patch",
+    ],
+    path = "github.com/golang/glog",
+    strip_prefix = "glog-23def4e6c14b4da8ac2ed8007337bc5eb5007998",
+    urls = ["https://github.com/golang/glog/archive/23def4e6c14b4da8ac2ed8007337bc5eb5007998.tar.gz"],
+)
+
 # Expose all Go repositories that are referenced in BUILD files
 use_repo(
     go_deps,
