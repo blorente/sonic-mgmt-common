@@ -1,0 +1,2 @@
+# Empty BUILD file to make this a Bazel package
+exports_files(["BUILD.gnmi"])

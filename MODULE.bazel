@@ -28,21 +28,27 @@ use_repo(pip, "pip")
 
 # Go toolchain and dependencies
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
-go_sdk.download(version = "1.21.3")
+go_sdk.download(version = "1.22.10")
 
 # Go dependencies from go.mod
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 
 # Apply patches to Go dependencies that require customization
+# gnmi: Patch code + add custom BUILD file to avoid WORKSPACE-style proto dependencies
 go_deps.archive_override(
     patch_strip = 1,
     patches = [
         "//patches:github.com-openconfig-gnmi.patch",
+        "//patches:gnmi-root-build.patch",
     ],
     path = "github.com/openconfig/gnmi",
     strip_prefix = "gnmi-0.11.0",
     urls = ["https://github.com/openconfig/gnmi/archive/refs/tags/v0.11.0.tar.gz"],
+)
+go_deps.gazelle_override(
+    build_file_generation = "off",  # We provide custom BUILD via patch
+    path = "github.com/openconfig/gnmi",
 )
 go_deps.archive_override(
     patch_strip = 1,
@@ -130,9 +136,96 @@ git_repository = use_repo_rule(
     "git_repository",
 )
 
+http_archive = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+)
+
+# Custom repositories not in BCR
 git_repository(
     name = "sonic-buildimage",
     branch = "master",
     build_file = "//third_party/sonic_build_image:BUILD.bazel",
     remote = "https://github.com/sonic-net/sonic-buildimage",
+)
+
+# PCRE library (required by libyang)
+http_archive(
+    name = "pcre_archive",
+    add_prefix = "pcre",
+    build_file_content = """
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "pcre_srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "pcre",
+    lib_source = ":pcre_srcs",
+    working_directory = "pcre/",
+    cache_entries = {
+        "CMAKE_C_FLAGS": "-fPIC",
+    },
+    out_static_libs = [
+        "libpcre.a",
+        "libpcrecpp.a",
+        "libpcreposix.a",
+    ],
+)
+""",
+    sha256 = "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8",
+    strip_prefix = "pcre-8.45",
+    urls = [
+        "https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2",
+    ],
+)
+
+# Libyang library
+http_archive(
+    name = "com_github_cesnet_libyang",
+    build_file_content = """
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "libyang",
+    lib_source = ":all_srcs",
+    cache_entries = {
+        # "CMAKE_INSTALL_PREFIX:PATH": ".",
+    },
+    # Using shared libs here.  When using static libs the libyang.a archive
+    # contains undefined references to "extension" libraries which libyang
+    # builds but does not install.  This results in linker errors later on
+    # complaining that libyang.a does not define: nacm, metadata, yangdata,
+    # user_yang_types, and user_inet_types.  These are all defined in .a
+    # archives but are abandond in the libyang build directory when the
+    # ENABLE_STATIC option is used.
+    out_shared_libs = ["libyang.so", "libyang.so.1", "libyang.so.1.2.2"],
+    deps = [
+        "@pcre_archive//:pcre",
+    ],
+)
+""",
+    patch_args = ["-p1"],
+    patches = [
+        "//patches:libyang-repo.patch",
+        "//patches:libyang.patch",
+    ],
+    sha256 = "411f0c675b0858f8deabc0545e33fbd791ff7c7a5b7d2c27e347e3973d5b8ae4",
+    strip_prefix = "libyang-1.0-r4",
+    urls = [
+        "https://github.com/CESNET/libyang/archive/refs/tags/v1.0-r4.tar.gz",
+    ],
 )
