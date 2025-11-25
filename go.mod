@@ -9,9 +9,9 @@ require (
 	github.com/antchfx/xpath v1.1.10
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/godbus/dbus/v5 v5.1.0
-	github.com/golang/glog v1.1.2
+	github.com/golang/glog v1.2.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
-	github.com/google/go-cmp v0.5.9
+	github.com/google/go-cmp v0.6.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/maruel/natural v1.1.1
 	github.com/openconfig/gnmi v0.11.0
@@ -21,21 +21,20 @@ require (
 	github.com/pkg/profile v1.7.0
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/tredoe/osutil v1.5.0
-	golang.org/x/text v0.13.0
-	google.golang.org/grpc v1.60.1
+	golang.org/x/text v0.21.0
+	google.golang.org/grpc v1.67.3
 )
 
 require (
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	golang.org/x/net v0.16.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 )
 
 // Glog patch needs to be updated to remove this.
