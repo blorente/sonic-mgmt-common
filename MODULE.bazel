@@ -147,7 +147,7 @@ http_archive = use_repo_rule(
 git_repository(
     name = "sonic-buildimage",
     branch = "master",
-    build_file = "//third_party/sonic_build_image:BUILD.bazel",
+    build_file = "//third_party/sonic_build_image:BUILD.external.bazel",
     remote = "https://github.com/sonic-net/sonic-buildimage",
 )
 
