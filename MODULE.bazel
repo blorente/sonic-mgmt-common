@@ -172,6 +172,7 @@ cmake(
     working_directory = "pcre/",
     cache_entries = {
         "CMAKE_C_FLAGS": "-fPIC",
+        "PCRE_SUPPORT_UNICODE_PROPERTIES": "ON",
     },
     out_static_libs = [
         "libpcre.a",
@@ -205,7 +206,7 @@ cmake(
     name = "libyang",
     lib_source = ":all_srcs",
     cache_entries = {
-        # "CMAKE_INSTALL_PREFIX:PATH": ".",
+        "PLUGINS_DIR": "lib/libyang",
     },
     # Using shared libs here.  When using static libs the libyang.a archive
     # contains undefined references to "extension" libraries which libyang
@@ -215,6 +216,7 @@ cmake(
     # archives but are abandond in the libyang build directory when the
     # ENABLE_STATIC option is used.
     out_shared_libs = ["libyang.so", "libyang.so.1", "libyang.so.1.2.2"],
+    out_data_dirs = ["lib/libyang"],
     deps = [
         "@pcre_archive//:pcre",
     ],

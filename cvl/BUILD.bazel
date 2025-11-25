@@ -30,6 +30,86 @@ go_library(
     ],
 )
 
+# Generate YIN files for CVL test schemas
+genrule(
+    name = "test-yin-files-tar",
+    srcs = glob(["testdata/schema/*.yang"]) + [
+        "//models/yang:sonic-common-yang",
+        "//models/yang:common-yang",
+    ],
+    outs = ["test-schema.tar"],
+    cmd = """
+        mkdir -p _yang_tmp/testdata _yang_tmp/common
+        for f in $(SRCS); do
+            if echo "$$f" | grep -q "testdata/schema"; then
+                cp "$$f" _yang_tmp/testdata/
+            else
+                cp "$$f" _yang_tmp/common/
+            fi
+        done
+        mkdir -p _yin_out
+        $(location //cvl/tools:generate_yin) --path=_yang_tmp/testdata --path=_yang_tmp/common --out-dir=_yin_out
+        cp _yang_tmp/common/ietf-*.yang _yin_out/ 2>/dev/null || true
+        tar cf $(OUTS) -C _yin_out .
+    """,
+    tools = ["//cvl/tools:generate_yin"],
+)
+
+genrule(
+    name = "test-yin-files",
+    srcs = [":test-yin-files-tar"],
+    outs = [
+        "test-schema/sonic-acl.yin",
+        "test-schema/sonic-bgp-global.yin",
+        "test-schema/sonic-buffer-pg.yin",
+        "test-schema/sonic-buffer-pool.yin",
+        "test-schema/sonic-buffer-profile.yin",
+        "test-schema/sonic-cablelength.yin",
+        "test-schema/sonic-common.yin",
+        "test-schema/sonic-device-metadata.yin",
+        "test-schema/sonic-device-neighbor.yin",
+        "test-schema/sonic-dscp-tc-map.yin",
+        "test-schema/sonic-extension.yin",
+        "test-schema/sonic-ifa.yin",
+        "test-schema/sonic-igmp-snooping.yin",
+        "test-schema/sonic-interface.yin",
+        "test-schema/sonic-leaflist-test.yin",
+        "test-schema/sonic-loopback-interface.yin",
+        "test-schema/sonic-mgmt_port.yin",
+        "test-schema/sonic-mgmt_vrf.yin",
+        "test-schema/sonic-mirror-session.yin",
+        "test-schema/sonic-ospfv2.yin",
+        "test-schema/sonic-pf-limits.yin",
+        "test-schema/sonic-pfc-priority-queue-map.yin",
+        "test-schema/sonic-port.yin",
+        "test-schema/sonic-port-qos-map.yin",
+        "test-schema/sonic-portchannel.yin",
+        "test-schema/sonic-portchannel-interface.yin",
+        "test-schema/sonic-queue.yin",
+        "test-schema/sonic-scheduler.yin",
+        "test-schema/sonic-sflow.yin",
+        "test-schema/sonic-spanning-tree.yin",
+        "test-schema/sonic-static-route.yin",
+        "test-schema/sonic-tam.yin",
+        "test-schema/sonic-tc-priority-group-map.yin",
+        "test-schema/sonic-tc-queue-map.yin",
+        "test-schema/sonic-telemetry.yin",
+        "test-schema/sonic-telemetry_client.yin",
+        "test-schema/sonic-test-xfmr.yin",
+        "test-schema/sonic-types.yin",
+        "test-schema/sonic-vlan.yin",
+        "test-schema/sonic-vlan-interface.yin",
+        "test-schema/sonic-vlan-subinterface.yin",
+        "test-schema/sonic-vrf.yin",
+        "test-schema/sonic-vxlan.yin",
+        "test-schema/sonic-wred-profile.yin",
+        "test-schema/ietf-inet-types.yang",
+        "test-schema/ietf-interfaces.yang",
+        "test-schema/ietf-yang-types.yang",
+    ],
+    cmd = "tar xf $(location :test-yin-files-tar) -C $$(dirname $(location test-schema/sonic-acl.yin))",
+)
+
 go_test(
     name = "cvl_test",
     srcs = [
@@ -43,14 +123,19 @@ go_test(
         "jsondata_test.go",
     ],
     data = glob(["testdata/**"]) + [
-        "//tools/test:database_config.json",
+        ":test-yin-files",
         "//cvl/conf:cvl_cfg.json",
+        "//tools/test:database_config.json",
+        "@com_github_cesnet_libyang//:libyang",
     ],
     env = {
-        "DB_CONFIG_PATH": "tools/test/database_config.json",
-        "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
+        "DB_CONFIG_PATH": "../tools/test/database_config.json",
+        "CVL_CFG_FILE": "conf/cvl_cfg.json",
+        "CVL_SCHEMA_PATH": "test-schema",
+        "LIBYANG_EXTENSIONS_PLUGINS_DIR": "../external/_main~_repo_rules~com_github_cesnet_libyang/libyang/lib/libyang/extensions",
+        "LIBYANG_USER_TYPES_PLUGINS_DIR": "../external/_main~_repo_rules~com_github_cesnet_libyang/libyang/lib/libyang/user_types",
     },
-    rundir = ".",
+    rundir = "cvl",
     deps = [
         ":cvl",
         "//cvl/common",
