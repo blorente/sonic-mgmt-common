@@ -61,7 +61,16 @@ go_test(
         "version_test.go",
         "yanglib_app_test.go",
     ],
+    data = [
+        "//tools/test:database_config.json",
+        "//cvl/conf:cvl_cfg.json",
+    ],
     embed = [":translib"],
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+        "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
+    },
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",

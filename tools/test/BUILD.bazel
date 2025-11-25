@@ -1,0 +1,24 @@
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
+package(default_visibility = ["//visibility:public"])
+
+# Export test configuration files for use by go_test rules
+exports_files([
+    "database_config.json",
+    "platform.json",
+])
+
+# Filegroup for all test configuration files
+filegroup(
+    name = "test_configs",
+    srcs = [
+        "database_config.json",
+        "platform.json",
+    ],
+)
+
+# Filegroup for database config only
+filegroup(
+    name = "db_config",
+    srcs = ["database_config.json"],
+)

@@ -68,7 +68,17 @@ go_test(
         "db_test.go",
         "db_value_test.go",
     ],
+    data = [
+        "//tools/test:database_config.json",
+        "//cvl/conf:cvl_cfg.json",
+    ],
     embed = [":db"],
+    # Set DB_CONFIG_PATH to point to the config file in runfiles
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+    },
+    # Run from the runfiles root so relative paths work
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/tlerr",

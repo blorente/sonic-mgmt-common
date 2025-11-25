@@ -42,7 +42,15 @@ go_test(
         "cvl_when_test.go",
         "jsondata_test.go",
     ],
-    data = glob(["testdata/**"]),
+    data = glob(["testdata/**"]) + [
+        "//tools/test:database_config.json",
+        "//cvl/conf:cvl_cfg.json",
+    ],
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+        "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
+    },
+    rundir = ".",
     deps = [
         ":cvl",
         "//cvl/common",
