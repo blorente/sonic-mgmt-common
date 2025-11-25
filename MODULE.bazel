@@ -35,19 +35,21 @@ go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 
 # Apply patches to Go dependencies that require customization
-# gnmi: Patch code + add custom BUILD file to avoid WORKSPACE-style proto dependencies
+# gnmi: Patch code only, let Gazelle generate BUILD files with proto mode disabled
 go_deps.archive_override(
     patch_strip = 1,
     patches = [
         "//patches:github.com-openconfig-gnmi.patch",
-        "//patches:gnmi-root-build.patch",
     ],
     path = "github.com/openconfig/gnmi",
     strip_prefix = "gnmi-0.11.0",
     urls = ["https://github.com/openconfig/gnmi/archive/refs/tags/v0.11.0.tar.gz"],
 )
 go_deps.gazelle_override(
-    build_file_generation = "off",  # We provide custom BUILD via patch
+    build_file_generation = "clean",  # Delete existing BUILD files and regenerate
+    directives = [
+        "gazelle:proto disable",  # Use pre-compiled .pb.go files
+    ],
     path = "github.com/openconfig/gnmi",
 )
 go_deps.archive_override(
