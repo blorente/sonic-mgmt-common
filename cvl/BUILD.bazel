@@ -132,8 +132,8 @@ go_test(
         "DB_CONFIG_PATH": "../tools/test/database_config.json",
         "CVL_CFG_FILE": "conf/cvl_cfg.json",
         "CVL_SCHEMA_PATH": "test-schema",
-        "LIBYANG_EXTENSIONS_PLUGINS_DIR": "../external/_main~_repo_rules~com_github_cesnet_libyang/libyang/lib/libyang/extensions",
-        "LIBYANG_USER_TYPES_PLUGINS_DIR": "../external/_main~_repo_rules~com_github_cesnet_libyang/libyang/lib/libyang/user_types",
+        "LIBYANG_EXTENSIONS_PLUGINS_DIR": "../../+_repo_rules2+com_github_cesnet_libyang/libyang/lib/libyang/extensions",
+        "LIBYANG_USER_TYPES_PLUGINS_DIR": "../../+_repo_rules2+com_github_cesnet_libyang/libyang/lib/libyang/user_types",
     },
     rundir = "cvl",
     deps = [
