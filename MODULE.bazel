@@ -6,10 +6,16 @@ module(
 bazel_dep(name = "bazel_skylib", version = "1.8.1")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.6.3")
-bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
 bazel_dep(name = "protobuf", version = "29.0")
 bazel_dep(name = "rules_go", version = "0.53.0")
 bazel_dep(name = "gazelle", version = "0.46.0")
+
+# rules_distroless for hermetic Debian package dependencies
+bazel_dep(name = "rules_distroless", version = "0.0.0")
+local_path_override(
+    module_name = "rules_distroless",
+    path = "../rules_distroless",
+)
 
 # Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -143,93 +149,50 @@ http_archive = use_repo_rule(
     "http_archive",
 )
 
+apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
+apt.sources_list(
+    architectures = ["amd64"],
+    components = ["main"],
+    suites = [
+        "bookworm",
+        "bookworm-updates",
+    ],
+    uris = ["https://snapshot.debian.org/archive/debian/20251001T023456Z"],
+)
+apt.sources_list(
+    architectures = ["amd64"],
+    components = ["main"],
+    suites = ["bookworm-security"],
+    uris = ["https://snapshot.debian.org/archive/debian-security/20251001T023456Z"],
+)
+apt.install(
+    dependency_set = "bookworm",
+    packages = [
+        "libpcre3",
+        "libpcre3-dev",
+    ],
+    target_release = "bookworm",
+)
+apt.lock(into = ":packages.lock")
+use_repo(apt, "bookworm")
+
+# SONiC-built libyang 1.0.73 for bookworm
+# These are built by SONiC and available from Azure DevOps artifacts
+# libyang 1.x API is required for CGO bindings compatibility
+sonic_libyang = use_repo_rule("//third_party/libyang:libyang.bzl", "sonic_libyang")
+
+sonic_libyang(
+    name = "sonic_libyang",
+    dev_sha256 = "f34fe596c453d7b422e181a11f5897acefcee8d9dc2dfcdc29c91c64873f7fd0",
+    dev_url = "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202505&platform=vs&target=target%2Fdebs%2Fbookworm%2Flibyang-dev_1.0.73_amd64.deb",
+    runtime_sha256 = "f389aaa244292f5d24d91b97320c28d4d59b4db2db4b76c59e5f66dfd4efb524",
+    runtime_url = "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202505&platform=vs&target=target%2Fdebs%2Fbookworm%2Flibyang_1.0.73_amd64.deb",
+)
+
 # Custom repositories not in BCR
 git_repository(
     name = "sonic-buildimage",
     branch = "master",
     build_file = "//third_party/sonic_build_image:BUILD.external.bazel",
     remote = "https://github.com/sonic-net/sonic-buildimage",
-)
-
-# PCRE library (required by libyang)
-http_archive(
-    name = "pcre_archive",
-    add_prefix = "pcre",
-    build_file_content = """
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
-
-package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "pcre_srcs",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-
-cmake(
-    name = "pcre",
-    lib_source = ":pcre_srcs",
-    working_directory = "pcre/",
-    cache_entries = {
-        "CMAKE_C_FLAGS": "-fPIC",
-        "PCRE_SUPPORT_UNICODE_PROPERTIES": "ON",
-    },
-    out_static_libs = [
-        "libpcre.a",
-        "libpcrecpp.a",
-        "libpcreposix.a",
-    ],
-)
-""",
-    sha256 = "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8",
-    strip_prefix = "pcre-8.45",
-    urls = [
-        "https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2",
-    ],
-)
-
-# Libyang library
-http_archive(
-    name = "com_github_cesnet_libyang",
-    build_file_content = """
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
-
-package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "all_srcs",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-
-cmake(
-    name = "libyang",
-    lib_source = ":all_srcs",
-    cache_entries = {
-        "PLUGINS_DIR": "lib/libyang",
-    },
-    # Using shared libs here.  When using static libs the libyang.a archive
-    # contains undefined references to "extension" libraries which libyang
-    # builds but does not install.  This results in linker errors later on
-    # complaining that libyang.a does not define: nacm, metadata, yangdata,
-    # user_yang_types, and user_inet_types.  These are all defined in .a
-    # archives but are abandond in the libyang build directory when the
-    # ENABLE_STATIC option is used.
-    out_shared_libs = ["libyang.so", "libyang.so.1", "libyang.so.1.2.2"],
-    out_data_dirs = ["lib/libyang"],
-    deps = [
-        "@pcre_archive//:pcre",
-    ],
-)
-""",
-    patch_args = ["-p1"],
-    patches = [
-        "//patches:libyang-repo.patch",
-        "//patches:libyang.patch",
-    ],
-    sha256 = "411f0c675b0858f8deabc0545e33fbd791ff7c7a5b7d2c27e347e3973d5b8ae4",
-    strip_prefix = "libyang-1.0-r4",
-    urls = [
-        "https://github.com/CESNET/libyang/archive/refs/tags/v1.0-r4.tar.gz",
-    ],
 )

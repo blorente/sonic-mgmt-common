@@ -7,10 +7,9 @@ go_library(
         "util.go",
     ],
     cdeps = [
-        "@com_github_cesnet_libyang//:libyang",
+        "@sonic_libyang//:libyang",
     ],
     cgo = True,
-    clinkopts = ["-lyang"],
     importpath = "github.com/Azure/sonic-mgmt-common/cvl/internal/util",
     visibility = ["//cvl:__subpackages__"],
     deps = [
