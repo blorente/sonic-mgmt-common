@@ -2,7 +2,7 @@
 # This file provides minimal go_library targets needed for bzlmod compatibility
 # Avoids WORKSPACE-style proto/grpc dependencies
 
-load("@rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 # Proto extension library
 go_library(

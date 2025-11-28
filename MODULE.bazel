@@ -7,7 +7,7 @@ bazel_dep(name = "bazel_skylib", version = "1.8.1")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.6.3")
 bazel_dep(name = "protobuf", version = "29.0")
-bazel_dep(name = "rules_go", version = "0.53.0")
+bazel_dep(name = "rules_go", version = "0.53.0", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.46.0")
 
 # rules_distroless for hermetic Debian package dependencies
@@ -34,7 +34,7 @@ pip.parse(
 use_repo(pip, "pip_sonic_mgmt_common")
 
 # Go toolchain and dependencies
-go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(version = "1.22.10")
 
 # Go dependencies from go.mod
