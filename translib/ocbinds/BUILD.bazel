@@ -52,7 +52,6 @@ genrule(
     name = "oc_go",
     srcs = ["//models/yang:yangs.tar"],
     outs = ["oc.go"],
-    #cmd = "./$(location @com_github_openconfig_ygot//generator) -generate_fakeroot -output_file $@ -package_name ocbinds -generate_fakeroot -fakeroot_name=device -compress_paths=false -exclude_modules ietf-interfaces -path . $(locations //models/yang)",
     cmd = "tar xf $(location //models/yang:yangs.tar) && " +
           "mkdir to_use && " +
           "find ./yang -name *.yang -exec mv {} to_use/ \\; && " +
