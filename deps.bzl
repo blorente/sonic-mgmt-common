@@ -270,8 +270,6 @@ def go_dependencies():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/openconfig/gnmi",
-        patch_args = ["-p1"],
-        patches = ["//patches:github.com-openconfig-gnmi.patch"],
         sum = "h1:H7pLIb/o3xObu3+x0Fv9DCK7TH3FUh7mNwbYe+34hFw=",
         version = "v0.11.0",
     )
@@ -544,14 +542,3 @@ def go_dependencies():
         sum = "h1:e8chVKKxCrs5cVqGeAJ58IbnoKAOt+fpezqX+Ck+UHU=",
         version = "v1.47.0",
     )
-
-#     go_repository(
-#         name = "com_github_openconfig_gnmi",
-#         build_file_generation = "on",
-#         build_file_proto_mode = "disable",
-#         importpath = "github.com/openconfig/gnmi",
-#         patch_args = ["-p1"],
-#         patches = ["//patches:github.com-openconfig-gnmi.patch"],
-#         sum = "h1:H7pLIb/o3xObu3+x0Fv9DCK7TH3FUh7mNwbYe+34hFw=",
-#         version = "v0.11.0",
-#     )
