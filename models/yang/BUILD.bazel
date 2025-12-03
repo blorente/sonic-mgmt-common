@@ -188,24 +188,13 @@ filegroup(
 )
 
 filegroup(
-    name = "yang_ietf_mod_ext_files",
-    srcs = glob(["extensions/ietf-*.yang"], allow_empty = True),
-)
-
-filegroup(
     name = "yang_annotation_files",
     srcs = glob(["annotations/*.yang"]),
 )
 
 filegroup(
     name = "yang_common_files",
-    srcs = glob(
-        [
-            "common/*.yang",
-            "sonic/common/ietf/*yang",
-        ],
-        allow_empty = True,
-    ),
+    srcs = glob(["common/*.yang"]),
 )
 
 filegroup(
@@ -240,11 +229,6 @@ filegroup(
     ),
 )
 
-filegroup(
-    name = "_models_test",
-    srcs = glob(["testdata/*.yang"], allow_empty = True),
-)
-
 pkg_tar(
     name = "models_tar",
     srcs = [
@@ -252,13 +236,6 @@ pkg_tar(
         ":_models",
         "//config/transformer:files",
     ],
-    mode = "0755",
-    package_dir = "/usr/models/yang",
-)
-
-pkg_tar(
-    name = "models_test_tar",
-    srcs = [":_models_test"],
     mode = "0755",
     package_dir = "/usr/models/yang",
 )

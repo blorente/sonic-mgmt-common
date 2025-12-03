@@ -21,7 +21,7 @@ go_test(
     srcs = [
         "platform_test.go",
     ],
-    data = glob(["testdata/**"], allow_empty = True) + [
+    data = [
         "//tools/test:database_config.json",
         "//cvl/conf:cvl_cfg.json",
     ],
