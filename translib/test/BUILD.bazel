@@ -1,19 +1,17 @@
+# NOTE: This test file uses legacy translib Subscribe API that has been refactored.
+# The test requires significant updates to work with the current API:
+# - IsSubscribeSupported() signature changed
+# - Subscribe() now takes SubscribeRequest instead of multiple parameters
+# - SubscribeResponse.Payload field removed/renamed
+#
+# This test is disabled until it can be updated.
+
+# Uncomment and update when migrating to new API:
+#
 # load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 #
 # go_library(
 #     name = "test_lib",
 #     srcs = ["translibtest.go"],
-#     importpath = "github.com/Azure/sonic-mgmt-common/translib/test",
-#     visibility = ["//visibility:private"],
-#     deps = [
-#         "//translib",
-#         "@com_github_golang_glog//:glog",
-#         "@com_github_workiva_go_datastructures//queue",
-#     ],
-# )
-#
-# go_binary(
-#     name = "test",
-#     embed = [":test_lib"],
-#     visibility = ["//visibility:public"],
+#     ...
 # )
