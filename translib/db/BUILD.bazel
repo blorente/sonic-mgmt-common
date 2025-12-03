@@ -76,6 +76,7 @@ go_test(
     # Set DB_CONFIG_PATH to point to the config file in runfiles
     env = {
         "DB_CONFIG_PATH": "tools/test/database_config.json",
+        "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",

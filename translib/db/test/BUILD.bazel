@@ -1,12 +1,18 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
-go_binary(
-    name = "arloIssue29",
+go_test(
+    name = "arloIssue29_test",
     srcs = ["arloIssue29.go"],
     data = [
         "//tools/test:database_config.json",
         "//cvl/conf:cvl_cfg.json",
     ],
+    # Set DB_CONFIG_PATH to point to the config file in runfiles
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+    },
+    # Run from the runfiles root so relative paths work
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -15,13 +21,19 @@ go_binary(
     ],
 )
 
-go_binary(
-    name = "testdb",
+go_test(
+    name = "testdb_test",
     srcs = ["testdb.go"],
     data = [
         "//tools/test:database_config.json",
         "//cvl/conf:cvl_cfg.json",
     ],
+    # Set DB_CONFIG_PATH to point to the config file in runfiles
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+    },
+    # Run from the runfiles root so relative paths work
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -30,13 +42,19 @@ go_binary(
     ],
 )
 
-go_binary(
-    name = "testmap",
+go_test(
+    name = "testmap_test",
     srcs = ["testmap.go"],
     data = [
         "//tools/test:database_config.json",
         "//cvl/conf:cvl_cfg.json",
     ],
+    # Set DB_CONFIG_PATH to point to the config file in runfiles
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+    },
+    # Run from the runfiles root so relative paths work
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -45,13 +63,19 @@ go_binary(
     ],
 )
 
-go_binary(
-    name = "testsubscribe",
+go_test(
+    name = "testsubscribe_test",
     srcs = ["testsubscribe.go"],
     data = [
         "//tools/test:database_config.json",
         "//cvl/conf:cvl_cfg.json",
     ],
+    # Set DB_CONFIG_PATH to point to the config file in runfiles
+    env = {
+        "DB_CONFIG_PATH": "tools/test/database_config.json",
+    },
+    # Run from the runfiles root so relative paths work
+    rundir = ".",
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",

@@ -71,9 +71,7 @@ filegroup(
 cc_library(
     name = "libyang",
     hdrs = glob(["dev/usr/include/libyang/*.h"]),
-    srcs = [
-        "runtime/usr/lib/x86_64-linux-gnu/libyang.so.1.2.2",
-    ],
+    srcs = glob(["runtime/usr/lib/x86_64-linux-gnu/libyang.so.*"]),
     data = [
         ":shared_libs",
         ":extension_plugins",

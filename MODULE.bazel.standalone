@@ -8,7 +8,7 @@
 # module must provide these patches instead.
 
 module(
-    name = "sonic_mgmt_common",
+    name = "sonic-mgmt-common",
     version = "1.0.0",
 )
 
