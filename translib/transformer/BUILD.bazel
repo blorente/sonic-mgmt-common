@@ -72,6 +72,8 @@ go_library(
     ],
 )
 
+# Integration test requiring Redis, State DB, and SONiC system utilities (/usr/bin/ntpq).
+# Run with: bazel test //translib/transformer:transformer_test --test_tag_filters=
 go_test(
     name = "transformer_test",
     srcs = [
@@ -96,6 +98,7 @@ go_test(
         "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
     },
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib",

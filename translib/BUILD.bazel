@@ -47,6 +47,8 @@ go_library(
     ],
 )
 
+# Integration test requiring Redis, CVL schemas, and SONiC platform infrastructure.
+# Run with: bazel test //translib:translib_test --test_tag_filters=
 go_test(
     name = "translib_test",
     srcs = [
@@ -71,6 +73,7 @@ go_test(
         "CVL_CFG_FILE": "cvl/conf/cvl_cfg.json",
     },
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",

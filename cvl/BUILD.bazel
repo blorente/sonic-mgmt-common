@@ -110,6 +110,8 @@ genrule(
     cmd = "tar xf $(location :test-yin-files-tar) -C $$(dirname $(location test-schema/sonic-acl.yin))",
 )
 
+# Integration test requiring Redis and CVL schema infrastructure.
+# Run with: bazel test //cvl:cvl_test --test_tag_filters=
 go_test(
     name = "cvl_test",
     srcs = [
@@ -134,6 +136,7 @@ go_test(
         "CVL_SCHEMA_PATH": "test-schema",
     },
     rundir = "cvl",
+    tags = ["manual"],
     deps = [
         ":cvl",
         "//cvl/common",

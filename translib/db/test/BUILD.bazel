@@ -1,5 +1,10 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
+# NOTE: These are manual integration tests that require a running Redis instance.
+# They use package main with main() instead of Test* functions, so they report
+# "no tests to run" but are kept for manual developer testing.
+# Run individually with: bazel test //translib/db/test:testdb_test --test_tag_filters=
+
 go_test(
     name = "arloIssue29_test",
     srcs = ["arloIssue29.go"],
@@ -13,6 +18,7 @@ go_test(
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -34,6 +40,7 @@ go_test(
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -55,6 +62,7 @@ go_test(
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",
@@ -76,6 +84,7 @@ go_test(
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/db",

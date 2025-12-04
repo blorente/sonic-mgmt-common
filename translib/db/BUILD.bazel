@@ -80,6 +80,9 @@ go_test(
     },
     # Run from the runfiles root so relative paths work
     rundir = ".",
+    # Integration test requiring running Redis instance on localhost:6379.
+    # Run with: bazel test //translib/db:db_test --test_tag_filters=
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//translib/tlerr",
