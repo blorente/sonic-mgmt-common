@@ -18,9 +18,11 @@ local_path_override(
 )
 
 # Python toolchain configuration
+# Note: Python version should be configured in the root module to avoid conflicts
+# When used as a dependency, the root module's Python version takes precedence
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
-    python_version = "3.9",
+    python_version = "3.11",
 )
 
 # Pip dependencies
@@ -28,7 +30,7 @@ python.toolchain(
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "pip_sonic_mgmt_common",
-    python_version = "3.9",
+    python_version = "3.11",
     requirements_lock = "//third_party/pip:requirements_lock.txt",
 )
 use_repo(pip, "pip_sonic_mgmt_common")
