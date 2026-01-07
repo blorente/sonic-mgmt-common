@@ -29,6 +29,11 @@ def _sonic_libyang_impl(rctx):
     # Clean up
     rctx.execute(["rm", "-f", "debian-binary", "control.tar.xz", "data.tar.xz", "libyang.deb", "libyang-dev.deb"])
 
+    # Copy headers to repo root so #include <libyang/libyang.h> works directly
+    # We copy instead of symlink because Bazel's glob doesn't follow directory symlinks
+    # This is needed because rules_go CGO doesn't properly use cc_library includes attribute
+    rctx.execute(["cp", "-r", "dev/usr/include/libyang", "libyang"])
+
     # Create BUILD file with cc_library targets
     # Using native cc_library rule which is always available
     build_content = '''
@@ -40,7 +45,7 @@ filegroup(
     srcs = glob(["**/*"]),
 )
 
-# Headers from libyang-dev
+# Headers from libyang-dev (original location)
 filegroup(
     name = "headers",
     srcs = glob(["dev/usr/include/libyang/*.h"]),
@@ -67,17 +72,21 @@ filegroup(
 )
 
 # Native cc_library for libyang
-# This provides headers and links against the shared library
+# Headers are copied to repo root so #include <libyang/libyang.h> works.
+# We use copts with -I flag because rules_go CGO only passes -iquote which
+# doesn't work for angle bracket includes (#include <header>).
+# The -isystem flag makes the headers available for #include <libyang/...>
 cc_library(
     name = "libyang",
-    hdrs = glob(["dev/usr/include/libyang/*.h"]),
+    hdrs = glob(["libyang/*.h"]),
     srcs = glob(["runtime/usr/lib/x86_64-linux-gnu/libyang.so.*"]),
+    copts = ["-isystem", "."],
     data = [
         ":shared_libs",
         ":extension_plugins",
         ":user_type_plugins",
     ],
-    includes = ["dev/usr/include"],
+    includes = ["."],
     linkopts = [
         "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
     ],

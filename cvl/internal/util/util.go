@@ -21,7 +21,7 @@ package util
 
 /*
 #cgo LDFLAGS: -lyang
-#include <libyang/libyang.h>
+#include "libyang/libyang.h"
 
 extern void customLogCallback(LY_LOG_LEVEL, char* msg, char* path);
 

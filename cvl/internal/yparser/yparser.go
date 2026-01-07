@@ -34,8 +34,8 @@ import (
 
 /*
 #cgo LDFLAGS: -lyang
-#include <libyang/libyang.h>
-#include <libyang/tree_data.h>
+#include "libyang/libyang.h"
+#include "libyang/tree_data.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
