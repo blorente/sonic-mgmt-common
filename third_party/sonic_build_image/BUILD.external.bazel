@@ -22,18 +22,23 @@ genrule(
         "sonic-yangs-export.tar",
         "sonic-yang-templates-export.tar",
     ],
-    cmd = "for f in $(locations :exported_yangs); do " +
-          "  tar -r -f $(@D)/sonic-yangs-export.tar -C $$(dirname $$f) `basename $$f`;" +
-          "done; " +
-          "for f in $(locations :exported_yang_templates); do " +
-          "  tar -r -f $(@D)/sonic-yang-templates-export.tar -C $$(dirname $$f) `basename $$f`;" +
-          "done;",
+    cmd = """
+          mkdir -p _yangs_staging _templates_staging
+          for f in $(locations :exported_yangs); do
+              cp $$f _yangs_staging/
+          done
+          tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf $(@D)/sonic-yangs-export.tar -C _yangs_staging .
+          for f in $(locations :exported_yang_templates); do
+              cp $$f _templates_staging/
+          done
+          tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf $(@D)/sonic-yang-templates-export.tar -C _templates_staging .
+          """,
     visibility = ["//visibility:public"],
 )
 
 pkg_tar(
     name = "sonic-cfggen",
-    srcs = glob(["src/sonic-config-engine/*"]),
+    srcs = glob(["src/sonic-config-engine/*"], allow_empty = True),
     mode = "0644",
     package_dir = "/sonic-config-engine",
     # strip_prefix = "/testdata",

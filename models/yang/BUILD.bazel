@@ -168,7 +168,7 @@ genrule(
           fi
 
           # Create the output tar
-          tar cf $(@D)/yangs.tar yang/
+          tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf $(@D)/yangs.tar yang/
           """,
     tools = [
         "//tools/pyang:generate_yang",
@@ -193,8 +193,25 @@ filegroup(
 )
 
 filegroup(
+    name = "yang_ietf_mod_ext_files",
+    srcs = glob(["extensions/ietf-*.yang"], allow_empty = True),
+)
+
+filegroup(
     name = "yang_common_files",
     srcs = glob(["common/*.yang"]),
+)
+
+filegroup(
+    name = "_models_test",
+    srcs = glob(["testdata/*.yang"], allow_empty = True),
+)
+
+pkg_tar(
+    name = "models_test_tar",
+    srcs = [":_models_test"],
+    mode = "0755",
+    package_dir = "/usr/models/yang",
 )
 
 filegroup(

@@ -50,7 +50,7 @@ genrule(
         mkdir -p _yin_out
         $(location //cvl/tools:generate_yin) --path=_yang_tmp/testdata --path=_yang_tmp/common --out-dir=_yin_out
         cp _yang_tmp/common/ietf-*.yang _yin_out/ 2>/dev/null || true
-        tar cf $(OUTS) -C _yin_out .
+        tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf $(OUTS) -C _yin_out .
     """,
     tools = ["//cvl/tools:generate_yin"],
 )
@@ -155,7 +155,7 @@ genrule(
     outs = ["yin-files.tar"],
     cmd = "tar xf $(location //models/yang:generate-yangs) && " +
           "./$(location //cvl/tools:generate_yin) -v --path=yang --path=yang/sonic --out-dir=yin_file_build && " +
-          "pushd yin_file_build && tar --owner=root --group=root -cf ../$(OUTS) *.yin && popd",
+          "pushd yin_file_build && tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf ../$(OUTS) *.yin && popd",
     tools = ["//cvl/tools:generate_yin"],
 )
 
