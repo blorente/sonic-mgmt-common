@@ -39,8 +39,6 @@ filegroup(
 genrule(
     name = "generate-yangs",
     srcs = [
-        "@sonic-buildimage//:sonic-yangs-export.tar",
-        "@sonic-buildimage//:sonic-yang-templates-export.tar",
         ":standard-yang",
         ":common-yang",
         ":extensions-yang",
@@ -52,128 +50,27 @@ genrule(
         "yangs.tar",
     ],
     cmd = """
-          SONICYANG_IMPORTS=""
-
-          # Bring in the yang files from sonic-buildimage to a scratch space.
-          # Also bring in the templates and generate yangs for them.
-          mkdir temp_imported_sonic_yangs
-          tar xf $(location @sonic-buildimage//:sonic-yangs-export.tar) -C ./temp_imported_sonic_yangs
-          mkdir temp_yang_templates
-          tar xf $(location @sonic-buildimage//:sonic-yang-templates-export.tar) -C ./temp_yang_templates
-
-          # Duplicate the sonic-buildimage yangs to a normal yang and CVL yang
-          # scratch space.
-          cp -r temp_imported_sonic_yangs temp_imported_sonic_cvlyangs
-
-          # Generate yang and cvl-yang files from the templates
-          ./$(location //tools/pyang:generate_yang) --out-yang-dir temp_imported_sonic_yangs --out-cvlyang-dir temp_imported_sonic_cvlyangs --templates ./temp_yang_templates
-
-          # Build the list of yang file names to import
-          if [ -z $$SONICYANG_IMPORTS ]; then
-              IMPORTS=""
-          else
-              pushd temp_imported_sonic_cvlyangs; IMPORTS=`ls $$SONICYANG_IMPORTS`; popd
-          fi
-          mkdir imported_sonic_yangs
-          cp  temp_imported_sonic_cvlyangs/*.yang imported_sonic_yangs/
-
-          # Bring in the common yang files
-          mkdir yang
+          mkdir yang yang/common yang/extensions yang/annotations yang/sonic yang/sonic/common
           for f in $(locations :standard-yang); do
               cp $$f yang/
           done
-          mkdir yang/common
           for f in $(locations :common-yang); do
               cp $$f yang/common
           done
-
-          # Bring in any extensions
-          mkdir yang/extensions
           for f in $(locations :extensions-yang); do
               cp $$f yang/extensions
           done
-
-          # Bring in any annotations
-          mkdir yang/annotations
           for f in $(locations :annotation-yang); do
               cp $$f yang/annotations/
           done
-
-          if [ -z "$$IMPORTS" ]; then
-              # Not importing anything from sonic-buildimage, blindly copy all
-              # the sonic yangs
-              mkdir yang/sonic
-              mkdir yang/sonic/common
-              for f in $(locations :sonic-yang); do
-                  cp $$f yang/sonic
-              done
-              for f in $(locations :sonic-common-yang); do
-                  cp $$f yang/sonic/common
-              done
-          else
-              # Make note if we are importing sonic-port.yang from sonic-buildimage
-              IMPORT_SONIC_PORT='n';
-              for f in $$IMPORTS; do
-                  if [ sonic-port.yang = $$f ]; then
-                      IMPORT_SONIC_PORT='y'
-                  fi
-              done
-
-              # Copy the local sonic yangs to a scratch space.
-              # Keep track of any overlaps between the local files and the imported
-              # sonic yangs.
-              SONIC_YANG_OVERLAPS=""
-              LOCAL_SONIC_YANGS=""
-              mkdir temp_sonic_yangs
-              mkdir temp_sonic_yangs/common
-              for f in $(locations :sonic-yang); do
-                  bname=`basename $$f`
-                  cp $$f temp_sonic_yangs/
-                  LOCAL_SONIC_YANGS="$$LOCAL_SONIC_YANGS $$bname"
-                  for i in $$IMPORTS; do
-                      if [ $$i = $$bname ]; then
-                          SONIC_YANG_OVERLAPS="$$SONIC_YANG_OVERLAPS $$bname"
-                          echo "Local sonic-yang $$bname overlaps w/ imported sonic-yang"
-                      fi
-                  done
-              done
-              for f in $(locations :sonic-common-yang); do
-                  cp $$f temp_sonic_yangs/common
-              done
-
-              # Copy in the local sonic yangs with the import tool
-              mkdir yang/sonic
-              EXCLUDE_STR=""
-              for excluded in $$SONIC_YANG_OVERLAPS; do
-                  EXCLUDE_STR="$$EXCLUDE_STR --exclude=$$excluded"
-              done
-              SUB=""
-              if [ $$IMPORT_SONIC_PORT = "y" ]; then
-                  SUB='--subst-port-ref=ifname:name'
-              fi
-              echo "Importing local sonic yangs:"
-              echo "  Port sub str: $$SUB"
-              echo "  Exclude List: $$EXCLUDE_STR"
-              ./$(location //tools/pyang:import_yang) --from=temp_sonic_yangs --from=yang/common --to=yang/sonic $$SUB --keep-comments $$EXCLUDE_STR $$LOCAL_SONIC_YANGS 
-
-              # Next import the sonic yangs from sonic-buildimage
-              SUB=""
-              if [ $$IMPORT_SONIC_PORT = "n" ]; then
-                  SUB='--subst-port-ref=name:ifname'
-              fi
-              echo "Importing buildimage sonic yangs:"
-              echo "  Por sub str: $$SUB"
-              echo "  Imports: $$IMPORTS"
-              ./$(location //tools/pyang:import_yang) --from=imported_sonic_yangs --from=yang/common --to=yang/sonic $$SUB $$IMPORTS
-          fi
-
-          # Create the output tar
+          for f in $(locations :sonic-yang); do
+              cp $$f yang/sonic
+          done
+          for f in $(locations :sonic-common-yang); do
+              cp $$f yang/sonic/common
+          done
           tar --sort=name --mtime='1970-01-01' --owner=0 --group=0 -cf $(@D)/yangs.tar yang/
           """,
-    tools = [
-        "//tools/pyang:generate_yang",
-        "//tools/pyang:import_yang",
-    ],
     visibility = ["//visibility:public"],
 )
 

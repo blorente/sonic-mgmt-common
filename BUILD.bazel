@@ -1,4 +1,6 @@
 load("@gazelle//:def.bzl", "gazelle")
+
+exports_files(["go_repos.bzl"])
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
 
 # gazelle:prefix github.com/Azure/sonic-mgmt-common

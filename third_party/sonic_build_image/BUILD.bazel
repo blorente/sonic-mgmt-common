@@ -1,3 +1,0 @@
-# Empty BUILD file to make this a package.
-# The actual build rules for @sonic-buildimage are in BUILD.external.bazel
-exports_files(["BUILD.external.bazel"])

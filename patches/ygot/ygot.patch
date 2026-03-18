@@ -1995,3 +1995,15 @@ index 33c6edb..d6f95a7 100644
 +		PerfOpts: &yang.PerformanceOpts{},
  	}
  }
+diff --git a/ytypes/BUILD.bazel b/ytypes/BUILD.bazel
+--- a/ytypes/BUILD.bazel
++++ b/ytypes/BUILD.bazel
+@@ -31,6 +31,8 @@ go_library(
+     deps = [
+         "//util",
+         "//ygot",
++        "@com_github_google_go_cmp//cmp",
++        "@com_github_openconfig_gnmi//value",
+         "@com_github_golang_glog//:glog",
+         "@com_github_kylelemons_godebug//pretty",
+         "@com_github_openconfig_gnmi//proto/gnmi",

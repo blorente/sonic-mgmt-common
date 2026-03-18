@@ -7,7 +7,7 @@ go_library(
         "yparser.go",
     ],
     cdeps = [
-        "@sonic_libyang//:libyang",
+        "@com_github_cesnet_libyang//:libyang",
     ],
     cgo = True,
     importpath = "github.com/Azure/sonic-mgmt-common/cvl/internal/yparser",

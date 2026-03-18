@@ -128,7 +128,7 @@ go_test(
         ":test-yin-files",
         "//cvl/conf:cvl_cfg.json",
         "//tools/test:database_config.json",
-        "@sonic_libyang//:libyang",
+        "@com_github_cesnet_libyang//:libyang",
     ],
     env = {
         "DB_CONFIG_PATH": "../tools/test/database_config.json",

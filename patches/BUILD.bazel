@@ -1,7 +1,5 @@
 exports_files([
-    "glog.patch",
     "jsonquery.patch",
     "xmlquery.patch",
     "xpath.patch",
-    "github.com-openconfig-ygot.patch",
 ])
