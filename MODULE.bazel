@@ -127,7 +127,11 @@ apt.sources_list(
 )
 apt.install(
     dependency_set = "bookworm",
-    suites = ["bookworm"],
+    suites = [
+        "bookworm",
+        "bookworm-updates",
+        "bookworm-security",
+    ],
     packages = [
         "libpcre3",
         "libpcre3-dev",
