@@ -6,8 +6,26 @@ Consumers of sonic-mgmt-common get these repos automatically via the transitive 
 """
 
 load("@gazelle//:deps.bzl", "go_repository")
+load("@com_github_openconfig_gnmi//:gnmi_deps.bzl", "gnmi_deps")
 
 def _sonic_go_repos_impl(module_ctx):
+
+    # Pull in gnmi's transitive deps (com_github_grpc_grpc, etc.)
+    gnmi_deps()
+
+    # TODO(bazel-ready): Migrate to a more recent version of openconfig/gnmi
+    # so we can consume it from the BCR instead of using go_repository + gnmi_deps().
+    # We add gnmi here because version 0.11.0 has BUILD files,
+    # but is WORKSPACE-only, so we can't pull it from the BCR.
+    go_repository(
+        name = "com_github_openconfig_gnmi",
+        importpath = "github.com/openconfig/gnmi",
+        patch_args = ["-p1"],
+        patches = ["//patches/gnmi:gnmi.patch"],
+        sum = "h1:H7pLIb/o3xObu3+x0Fv9DCK7TH3FUh7mNwbYe+34hFw=",
+        version = "v0.11.0",
+    )
+
     go_repository(
         name = "com_github_openconfig_ygot",
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],

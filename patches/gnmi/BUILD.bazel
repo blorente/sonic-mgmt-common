@@ -1,0 +1,3 @@
+exports_files(["goyang.patch"])
+# Was previously at @sonic-gnmi:
+#   https://github.com/thesayyn/sonic-gnmi/blob/before-migration/patches/github.com-openconfig-gnmi.patch
