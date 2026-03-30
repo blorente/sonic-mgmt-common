@@ -47,7 +47,7 @@ use_repo(pip, "pip_sonic_mgmt_common")
 
 # Go toolchain and dependencies
 go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
-go_sdk.download(version = "1.22.10")
+go_sdk.download(version = "1.23.0")
 
 # Go dependencies from go.mod
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
