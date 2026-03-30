@@ -25,6 +25,7 @@ py_binary(
         "tree.py",
         "yangtools.py",
     ],
+    imports = ["."],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/pyang/pyang_plugins",
