@@ -53,6 +53,13 @@ go_sdk.download(version = "1.23.0")
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 
+# Expose these deps first because we need them for the sonic-patched deps
+use_repo(
+  go_deps,
+  "com_github_openconfig_gnmi",
+  "com_github_golang_protobuf",
+)
+
 # SONiC-patched ygot and goyang, shared across the SONiC management stack.
 sonic_go_repos = use_extension("//:go_repos.bzl", "sonic_go_repos")
 use_repo(sonic_go_repos, "com_github_openconfig_ygot", "com_github_openconfig_goyang")
@@ -106,7 +113,6 @@ use_repo(
     "com_github_google_go_cmp",
     "com_github_kylelemons_godebug",
     "com_github_maruel_natural",
-    "com_github_openconfig_gnmi",
     "com_github_philopon_go_toposort",
     "com_github_pkg_profile",
     "com_github_redis_go_redis_v9",
