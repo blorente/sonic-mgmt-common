@@ -8,6 +8,7 @@ go_library(
     ],
     cdeps = [
         "@com_github_cesnet_libyang//:libyang",
+        "//:libyang_cgo_headers",
     ],
     cgo = True,
     importpath = "github.com/Azure/sonic-mgmt-common/cvl/internal/util",
