@@ -11,6 +11,13 @@ go_library(
         "//:libyang_cgo_headers",
     ],
     cgo = True,
+    # TODO BL: Fix this.
+    # When consumed as an external module, includes from cc_library don't
+    # propagate through cgo. Add the include path explicitly.
+    cppopts = [
+        "-isystem $(BINDIR)/external/sonic-mgmt-common+/libyang_headers_dir",
+        "-isystem external/sonic-mgmt-common+/libyang_headers_dir",
+    ],
     importpath = "github.com/Azure/sonic-mgmt-common/cvl/internal/yparser",
     visibility = ["//cvl:__subpackages__"],
     deps = ["//cvl/internal/util"],

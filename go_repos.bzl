@@ -1,27 +1,14 @@
 """Module extension providing SONiC-patched versions of openconfig/ygot and openconfig/goyang.
 
+# TODO BL: update comment
 Both packages are pinned to specific versions and patched with SONiC-specific changes
 (adds YGStructMetaMap and related types used across the SONiC management stack).
 Consumers of sonic-mgmt-common get these repos automatically via the transitive dep graph.
 """
 
 load("@gazelle//:deps.bzl", "go_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-def _gnmi_deps():
-    """Inlined from gnmi_deps.bzl to avoid circular dep (gnmi is created by this extension).
-
-    TODO(bazel-ready): Remove when migrating to a newer gnmi from the BCR.
-    """
-    # gnmi_deps.bzl fetches com_github_grpc_grpc, rules_proto_grpc,
-    # com_google_protobuf, rules_proto, and com_google_googleapis.
-    # None are needed: gnmi's upstream BUILD files use them for C++ targets,
-    # but we delete those BUILD files and let Gazelle regenerate Go-only ones
-    # (via build_file_generation = "on" + patch_cmds below).
 
 def _sonic_go_repos_impl(module_ctx):
-
-    _gnmi_deps()
 
     # TODO(bazel-ready): Migrate to a more recent version of openconfig/gnmi
     # so we can consume it from the BCR instead of using go_repository + gnmi_deps().
@@ -29,6 +16,10 @@ def _sonic_go_repos_impl(module_ctx):
     # but is WORKSPACE-only, so we can't pull it from the BCR.
     go_repository(
         name = "com_github_openconfig_gnmi",
+        # NOTE: Enable build-file generation, but disable it for protobuf.
+        # gnmi already has hand-crafted BUILD files for protobuf, we don't want to override those.
+        build_file_generation = "on",
+        build_directives = ["gazelle:proto disable_global"],
         importpath = "github.com/openconfig/gnmi",
         patch_args = ["-p1"],
         patches = ["//patches/gnmi:gnmi.patch"],
@@ -41,7 +32,10 @@ def _sonic_go_repos_impl(module_ctx):
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],
         importpath = "github.com/openconfig/ygot",
         patch_args = ["-p1"],
-        patches = ["//patches/ygot:ygot.patch"],
+        patches = [
+            "//patches/ygot:ygot.patch",
+            "//patches/ygot:ygot_build.patch",
+        ],
         sum = "h1:EKaeFhx1WwTZGsYeqipyh1mfF8y+z2StaXZtwVnXklk=",
         version = "v0.13.1",
     )

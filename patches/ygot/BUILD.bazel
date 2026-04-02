@@ -1,1 +1,1 @@
-exports_files(["ygot.patch"])
+exports_files(["ygot.patch", "ygot_build.patch"])
