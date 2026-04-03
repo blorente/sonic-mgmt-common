@@ -239,7 +239,7 @@
     "//:go_repos.bzl%sonic_go_repos": {
       "general": {
         "bzlTransitiveDigest": "WuwEgHkTi+n+g4l/gysKXm7vBrJUfpBoSoWM05O2dsI=",
-        "usagesDigest": "Gogqxdi0yH7wMXemEKlCTvow335Ykj6Aqm/jVSyj/Ck=",
+        "usagesDigest": "yHYb7ZMgx2BfuhYuRXWBlufWCW4N+77n3cek9jjDUPE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
