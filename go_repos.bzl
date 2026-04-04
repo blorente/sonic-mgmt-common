@@ -72,6 +72,19 @@ def _sonic_go_repos_impl(module_ctx):
         version = "v1.1.3",
     )
 
+    # msteinert/pam requires CGO with libpam from system packages.
+    # The patch provides a hand-written BUILD file that uses @bookworm apt
+    # packages for hermetic libpam linking instead of pkg-config.
+    go_repository(
+        name = "com_github_msteinert_pam",
+        build_file_generation = "off",
+        importpath = "github.com/msteinert/pam",
+        patch_args = ["-p1"],
+        patches = ["//patches/pam:pam_build.patch"],
+        sum = "h1:ZivaaKmjs9q90zi6I4gTLW6tbVGtlBjellr3hMYaly0=",
+        version = "v0.0.0-20190215180659-f29b9f28d6f9",
+    )
+
     go_repository(
         name = "com_github_openconfig_ygot",
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],
