@@ -27,11 +27,22 @@ def _sonic_go_repos_impl(module_ctx):
         version = "v0.11.0",
     )
 
+    # gnsi v1.7.0 ships WORKSPACE-style BUILD files that load cpp_grpc_library
+    # from @rules_proto_grpc//cpp:defs.bzl. Under bzlmod with rules_proto_grpc
+    # 5.0.0+, the C++ rules live in a separate module (rules_proto_grpc_cpp),
+    # so those load statements are invalid.
+    #
+    # Rather than patching the BUILD files, we let gazelle regenerate them from
+    # scratch ("clean"). sonic-gnmi only consumes the Go library targets from
+    # gnsi (authz, certz, credentialz, pathz), not the C++ proto targets, so
+    # the regenerated BUILD files (which omit cpp_grpc_library) are sufficient.
+    # "gazelle:proto disable_global" prevents gazelle from registering proto
+    # targets globally, avoiding conflicts with other proto providers.
     go_repository(
         name = "com_github_openconfig_gnsi",
+        build_file_generation = "clean",
+        build_directives = ["gazelle:proto disable_global"],
         importpath = "github.com/openconfig/gnsi",
-        patch_args = ["-p1"],
-        patches = ["//patches/gnsi:gnsi.patch"],
         sum = "h1:Enn5i3m6KsnHeUI+kalB9OH8fADf0oeymd/3Ze0BzME=",
         version = "v1.7.0",
     )
