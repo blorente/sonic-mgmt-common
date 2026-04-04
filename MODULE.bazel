@@ -83,6 +83,7 @@ go_deps.module(
 sonic_go_repos = use_extension("//:go_repos.bzl", "sonic_go_repos")
 use_repo(
     sonic_go_repos,
+    "com_github_golang_glog",
     "com_github_openconfig_gnmi",
     "com_github_openconfig_gnsi",
     "com_github_openconfig_goyang",
@@ -90,8 +91,6 @@ use_repo(
 )
 
 # Make ygot's go_deps dependencies visible to the repos created by sonic_go_repos.
-inject_repo(sonic_go_repos, "com_github_golang_glog")
-
 inject_repo(sonic_go_repos, "com_github_golang_protobuf")
 
 inject_repo(sonic_go_repos, "com_github_google_go_cmp")
@@ -156,7 +155,6 @@ use_repo(
     "com_github_cenkalti_backoff_v4",
     "com_github_go_redis_redis_v7",
     "com_github_godbus_dbus_v5",
-    "com_github_golang_glog",
     "com_github_golang_protobuf",
     "com_github_golang_groupcache",
     "com_github_google_go_cmp",

@@ -47,6 +47,18 @@ def _sonic_go_repos_impl(module_ctx):
         version = "v1.7.0",
     )
 
+    # SONiC patches glog to add syslog support, LOG_FIRST_N rate limiting,
+    # stdout logging, and GetLogCount(). Pinned to the old pre-module version
+    # that sonic-gnmi's go.mod replace directive also targets.
+    go_repository(
+        name = "com_github_golang_glog",
+        importpath = "github.com/golang/glog",
+        patch_args = ["-p1"],
+        patches = ["//patches/glog:glog.patch"],
+        sum = "h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=",
+        version = "v0.0.0-20160126235308-23def4e6c14b",
+    )
+
     go_repository(
         name = "com_github_openconfig_ygot",
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],
