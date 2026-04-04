@@ -28,6 +28,15 @@ def _sonic_go_repos_impl(module_ctx):
     )
 
     go_repository(
+        name = "com_github_openconfig_gnsi",
+        importpath = "github.com/openconfig/gnsi",
+        patch_args = ["-p1"],
+        patches = ["//patches/gnsi:gnsi.patch"],
+        sum = "h1:Enn5i3m6KsnHeUI+kalB9OH8fADf0oeymd/3Ze0BzME=",
+        version = "v1.7.0",
+    )
+
+    go_repository(
         name = "com_github_openconfig_ygot",
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],
         importpath = "github.com/openconfig/ygot",
