@@ -59,6 +59,19 @@ def _sonic_go_repos_impl(module_ctx):
         version = "v0.0.0-20160126235308-23def4e6c14b",
     )
 
+    # gousb requires CGO with libusb and libudev from system packages.
+    # The patch provides a hand-written BUILD file that uses @bookworm apt
+    # packages for hermetic libusb/libudev linking instead of pkg-config.
+    go_repository(
+        name = "com_github_google_gousb",
+        build_file_generation = "off",
+        importpath = "github.com/google/gousb",
+        patch_args = ["-p1"],
+        patches = ["//patches/gousb:gousb_build.patch"],
+        sum = "h1:xt6M5TDsGSZ+rlomz5Si5Hmd/Fvbmo2YCJHN+yGaK4o=",
+        version = "v1.1.3",
+    )
+
     go_repository(
         name = "com_github_openconfig_ygot",
         build_directives = ["gazelle:proto_import_prefix github.com/openconfig/ygot"],

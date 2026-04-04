@@ -1,0 +1,67 @@
+diff --git a/BUILD.bazel b/BUILD.bazel
+new file mode 100644
+--- /dev/null
++++ b/BUILD.bazel
+@@ -0,0 +1,62 @@
++load("@io_bazel_rules_go//go:def.bzl", "go_library")
++load("@rules_cc//cc:cc_library.bzl", "cc_library")
++
++# Extract libudev.so.1 from the libudev1 package tarball and create libudev.so symlink
++# This avoids the "argument list too long" issue that occurs when using
++# libudev-dev cc_library directly due to transitive include dependencies
++genrule(
++    name = "extract_libudev",
++    srcs = ["@bookworm//libudev1:data"],
++    outs = ["libudev.so.1", "libudev.so"],
++    cmd = """
++        tar -xzf $(SRCS) -O ./usr/lib/x86_64-linux-gnu/libudev.so.1.7.5 > $(location libudev.so.1)
++        cp $(location libudev.so.1) $(location libudev.so)
++    """,
++)
++
++# Wrapper cc_library that provides libudev.so for linking
++cc_library(
++    name = "libudev_linker",
++    srcs = [":libudev.so.1", ":libudev.so"],
++    linkopts = [
++        "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
++    ],
++)
++
++# gousb with hermetic libusb from rules_distroless apt packages
++go_library(
++    name = "gousb",
++    srcs = [
++        "config.go",
++        "constants.go",
++        "debug.go",
++        "device.go",
++        "endpoint.go",
++        "endpoint_stream.go",
++        "error.go",
++        "interface.go",
++        "libusb.go",
++        "misc.go",
++        "transfer.c",
++        "transfer.go",
++        "transfer_stream.go",
++        "usb.c",
++        "usb.go",
++    ],
++    cgo = True,
++    cdeps = [
++        "@bookworm//libusb-1.0-0-dev:libusb-1.0-0",
++        ":libudev_linker",
++    ],
++    clinkopts = [
++        "-lpthread",
++    ],
++    copts = [
++        "-I$(BINDIR)/external/rules_distroless++apt+bookworm_libusb-1.0-0-dev-amd64_2-1.0.26-1/usr/include/libusb-1.0",
++    ],
++    cppopts = [
++        "-I$(BINDIR)/external/rules_distroless++apt+bookworm_libusb-1.0-0-dev-amd64_2-1.0.26-1/usr/include/libusb-1.0",
++    ],
++    importpath = "github.com/google/gousb",
++    visibility = ["//visibility:public"],
++)

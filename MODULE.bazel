@@ -15,6 +15,7 @@ bazel_dep(name = "grpc", version = "1.56.3.bcr.1", repo_name = "com_github_grpc_
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "bazel_lib", version = "3.1.1")
 bazel_dep(name = "sonic-build-infra", version = "0.0.0", repo_name = "sonic_build_infra")
+bazel_dep(name = "rules_cc", version = "0.2.14")
 
 register_toolchains("@sonic_build_infra//toolchains/gcc:host_gcc_toolchain")
 
@@ -84,6 +85,7 @@ sonic_go_repos = use_extension("//:go_repos.bzl", "sonic_go_repos")
 use_repo(
     sonic_go_repos,
     "com_github_golang_glog",
+    "com_github_google_gousb",
     "com_github_openconfig_gnmi",
     "com_github_openconfig_gnsi",
     "com_github_openconfig_goyang",
@@ -114,6 +116,10 @@ inject_repo(sonic_go_repos, "com_github_protocolbuffers_txtpbfmt")
 inject_repo(sonic_go_repos, "org_golang_google_grpc")
 inject_repo(sonic_go_repos, "org_golang_x_crypto")
 inject_repo(sonic_go_repos, "org_golang_x_net")
+
+# For gousb's patched BUILD file.
+inject_repo(sonic_go_repos, "bookworm")
+inject_repo(sonic_go_repos, "rules_cc")
 
 # TODO BL: If we end up not doing this, uncomment
 # inject_repo(sonic_go_repos, "org_golang_google_grpc")
@@ -195,6 +201,8 @@ apt.install(
     packages = [
         "libpcre3",
         "libpcre3-dev",
+        "libusb-1.0-0-dev",
+        "libudev1",
     ],
     suites = [
         "bookworm",
