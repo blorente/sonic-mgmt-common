@@ -236,7 +236,7 @@
   "moduleExtensions": {
     "//:go_repos.bzl%sonic_go_repos": {
       "general": {
-        "bzlTransitiveDigest": "hAQQyCSysjzJB1nfNzVL2ZGngDmq6HY466FGms3se1g=",
+        "bzlTransitiveDigest": "iVgESn8Bc7C8dXar8+yMuwOzpZZKwex7Ba2QOeFDe2g=",
         "usagesDigest": "glz9UFZKcQmBh/8yJ9rmoZ0NLVYoDY7NKydRVtsnu4k=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -273,6 +273,15 @@
               "importpath": "github.com/protocolbuffers/txtpbfmt",
               "sum": "h1:AKJY61V2SQtJ2a2PdeswKk0NM1qF77X+julRNYRxPOk=",
               "version": "v0.0.0-20220608084003-fc78c767cd6a"
+            }
+          },
+          "com_github_openconfig_gnoi": {
+            "repoRuleId": "@@gazelle+//internal:go_repository.bzl%go_repository",
+            "attributes": {
+              "build_file_generation": "off",
+              "importpath": "github.com/openconfig/gnoi",
+              "sum": "h1:7u+4jc9kEuaXMYHCLLW2eRO0WC3mElx+0/t/xqRtYJ4=",
+              "version": "v0.4.1-0.20240320162840-dbdca7782474"
             }
           },
           "com_github_mitchellh_go_wordwrap": {

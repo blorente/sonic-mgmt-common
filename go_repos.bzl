@@ -52,6 +52,17 @@ def _register_transitive_dependency_fixes():
         version = "v0.0.0-20220608084003-fc78c767cd6a",
     )
 
+    # gnoi's checked-in BUILD files reference @com_github_grpc_grpc for C++
+    # targets that don't resolve under bzlmod.  Turning generation off keeps
+    # those files inert; sonic-gnmi only uses the Go library targets anyway.
+    go_repository(
+        name = "com_github_openconfig_gnoi",
+        build_file_generation = "off",
+        importpath = "github.com/openconfig/gnoi",
+        sum = "h1:7u+4jc9kEuaXMYHCLLW2eRO0WC3mElx+0/t/xqRtYJ4=",
+        version = "v0.4.1-0.20240320162840-dbdca7782474",
+    )
+
     go_repository(
         name = "com_github_mitchellh_go_wordwrap",
         importpath = "github.com/mitchellh/go-wordwrap",
