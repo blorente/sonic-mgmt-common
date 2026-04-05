@@ -114,9 +114,6 @@ inject_repo(sonic_go_repos, "org_golang_x_net")
 inject_repo(sonic_go_repos, "bookworm")
 inject_repo(sonic_go_repos, "rules_cc")
 
-# TODO BL: If we end up not doing this, uncomment
-# inject_repo(sonic_go_repos, "org_golang_google_grpc")
-
 # antchfx packages need SONiC-specific patches; use go_repository directly
 # so we can apply -p1 patches without go_deps.module_override (root-only).
 go_repository = use_repo_rule("@gazelle//:deps.bzl", "go_repository")
