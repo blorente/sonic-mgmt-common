@@ -33,21 +33,3 @@ pkg_deb(
     package_file_name = "sonic-mgmt-common_1.0.0_amd64.deb",
     version = "1.0",
 )
-
-# rules_go CGo doesn't propagate strip_include_prefix/include_prefix virtual
-# includes from cc_library deps. Work around by copying public headers into a
-# libyang/ directory so #include "libyang/libyang.h" resolves for CGo targets.
-# TODO BL: Clean up the canonical names
-copy_to_directory(
-    name = "libyang_headers_dir",
-    srcs = ["@@libyang++_repo_rules+libyang_src//:public_header_files"],
-    replace_prefixes = {"src/": "libyang/"},
-    include_external_repositories = ["libyang++_repo_rules+libyang_src"],
-)
-
-cc_library(
-    name = "libyang_cgo_headers",
-    hdrs = [":libyang_headers_dir"],
-    includes = ["libyang_headers_dir"],
-    visibility = ["//visibility:public"],
-)
