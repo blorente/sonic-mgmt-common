@@ -72,6 +72,18 @@ def _sonic_go_repos_impl(module_ctx):
         version = "v1.1.3",
     )
 
+    # SONiC patches gnxi to add JWT token support,
+    # proto bytes encoding, origin-aware xpath parsing,
+    # and escaped '/' handling.
+    go_repository(
+        name = "com_github_google_gnxi",
+        importpath = "github.com/google/gnxi",
+        patch_args = ["-p1"],
+        patches = ["//patches/gnxi:gnxi.patch"],
+        sum = "h1:OtErLAncPdsEEhOI4ueR48dr6uThRIPkwWcOAdQ4LyI=",
+        version = "v0.0.0-20191016182648-6697a080bc2d",
+    )
+
     # msteinert/pam requires CGO with libpam from system packages.
     # The patch provides a hand-written BUILD file that uses @bookworm apt
     # packages for hermetic libpam linking instead of pkg-config.
