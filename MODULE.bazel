@@ -20,12 +20,7 @@ bazel_dep(name = "rules_cc", version = "0.2.14")
 register_toolchains("@sonic_build_infra//toolchains/gcc:host_gcc_toolchain")
 
 # rules_distroless for hermetic Debian package dependencies
-bazel_dep(name = "rules_distroless", version = "0.0.0")
-git_override(
-    module_name = "rules_distroless",
-    commit = "ebfd74a2e07b83235e064bb63ace98a1a5223e02",
-    remote = "https://github.com/bazel-contrib/rules_distroless",
-)
+bazel_dep(name = "rules_distroless", version = "0.0.0.commit-ebfd74a2e07b83235e064bb63ace98a1a5223e02")
 
 # Python toolchain configuration
 # Note: Python version should be configured in the root module to avoid conflicts
